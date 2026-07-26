@@ -1,0 +1,286 @@
+import type { Dict } from "./zh";
+
+export const en: Dict = {
+  lang: "en",
+  docTitle: "Ink Realm · Mountain & River Go",
+
+  nav: {
+    brand: "Ink Realm",
+    rules: "Rules",
+    effects: "Effects",
+    weather: "Phase",
+    gomoku: "Gomoku",
+    about: "About",
+    play: "Play",
+    aria: "Main navigation",
+  },
+
+  langToggle: {
+    zh: "中",
+    en: "EN",
+    aria: "Switch language",
+  },
+
+  hero: {
+    brand: "Ink Realm",
+    titleA: "Ink",
+    titleB: "Realm",
+    kicker: "INK GO STRATEGY",
+    sub: "Rewrite every breath of liberty across an ink-washed landscape.",
+    desc: "A strategy game built on strict classical Go rules, yet letting the heavens, ink-qi, and flowing shapes transform the way a game is played.",
+    ctaPlay: "Begin Play",
+    ctaRules: "Read the Design",
+    navRules: "Rules",
+    navEffects: "Effects",
+    navWeather: "Phase",
+    navGomoku: "Gomoku",
+    navPlay: "Play",
+  },
+
+  rules: {
+    kicker: "CORE PLAY",
+    title: "Honor Go first — then let the board come alive.",
+    sub: "Ink Realm restores classical Go within a painted landscape of mountains and rivers, letting you play as both a master of the board and a painter of worlds.",
+    notes: [
+      {
+        title: "Classical Go, intact",
+        copy: "Liberties, captures, ko, ladders, and endgame scoring are all here — the rules hold faithfully to traditional Go.",
+      },
+      {
+        title: "Ink renders thickness visible",
+        copy: "Great influence gathers into a mystic tortoise; a shortage of liberties turns into darting fish — every shape is translated into living ink.",
+      },
+      {
+        title: "A cinematic match",
+        copy: "A rice-paper board, capture bursts, ko rifts, seal-stamped verdicts, and the breathing skies of dawn, noon, dusk, and night.",
+      },
+    ],
+  },
+
+  effects: {
+    kicker: "INK EFFECTS",
+    title: "An effects proving ground — try it yourself.",
+    desc: "Every ink flourish is a visualization of the rules, never altering who wins. Pick a scenario and place a stone on the board to trigger it.",
+    catalog: "Effects Index",
+    reset: "Reset Board",
+    scenarios: [
+      {
+        name: "Spirit Spring · Star Points",
+        tag: "Landscape",
+        desc: "With ink beasts on, the nine star points become spirit springs — gold radiance ripples outward from each heart, like mountain water veins stirring beneath the board.",
+      },
+      {
+        name: "Mystic Tortoise · Thick Shape",
+        tag: "Black Influence",
+        desc: "When Black forms a thick dragon (≥6 stones with ample liberties), the phantom of a mystic tortoise rises at the heart of the shape.",
+      },
+      {
+        name: "Darting Fish · Liberty Shortage",
+        tag: "Atari",
+        desc: "Whenever any group is reduced to a single liberty (in atari), a darting fish appears as a warning — translating the crisis of breath into an ink image.",
+      },
+      {
+        name: "Dragon Vein Rift",
+        tag: "Ko Fight",
+        desc: "Black playing (2,1) to capture a White stone forms a ko; a gold-red rift blooms at the ko point. By the ko rule the opponent cannot immediately recapture (clicking there does nothing — that is the ko).",
+      },
+      {
+        name: "Seal Verdict",
+        tag: "Endgame",
+        desc: "When the game ends or a side resigns, the victor's name is sealed in vermilion ink.",
+      },
+    ],
+  },
+
+  weather: {
+    kicker: "DYNAMIC SKY",
+    title: "Dawn, noon, dusk, and night change the rhythm of play.",
+    desc: "The heavens turn with the four watches, and the shifting of light and breath opens different windows of tempo for expansion, concealment, and rescuing lonely stones.",
+    phases: [
+      { name: "Dawn", line: "Ink runs pale at the opening — outward influence spreads with ease." },
+      { name: "Noon", line: "Qi is at its fullest; light and shadow read most clearly." },
+      { name: "Dusk", line: "Shadows weigh heavy on the corners; ko material stands out sharper." },
+      { name: "Night", line: "Lonely stones fade into mist; the instinct to rescue grows keener." },
+    ],
+  },
+
+  dlc: {
+    kicker: "DLC · Gomoku",
+    titleLead: "Official Gomoku",
+    titleTail: ": Ink Realm · Gomoku",
+    desc: "The same landscape — connect five, draw it in ink.",
+    enterGomoku: "Enter Gomoku",
+    backToGo: "Back to Go",
+    notes: [
+      {
+        title: "Freestyle Gomoku",
+        copy: "Black and White alternate stones; whoever first connects five in a row — horizontal, vertical, or diagonal — wins. No forbidden moves, rules at their simplest, ready to play in a minute.",
+      },
+      {
+        title: "Five Becomes Ink",
+        copy: "The instant five connect, an ink line flows from start to end, translating one victory into a single brushstroke — as if writing an answer across the mountains and rivers.",
+      },
+      {
+        title: "A Shared Landscape",
+        copy: "The same rice-paper board, the same breathing skies of dawn, noon, dusk, and night, and the same wooden-fish stone-click — old friends of Go need not learn a new path.",
+      },
+    ],
+  },
+
+  why: {
+    kicker: "WHY IT WORKS",
+    title: "Triumphs of the mind, magnified into moments you can hear, see, and remember.",
+    points: [
+      "Never breaks fairness: beasts and rifts are rule feedback — they never alter the outcome.",
+      "Gives a sense of tempo: a ko's distant transfer becomes bodily perception through the ink line.",
+      "Amplifies emotional release: captures, recaptures, and engulfings all become climaxes of bursting ink.",
+    ],
+    experienceGo: "Experience Go",
+    experienceGomoku: "Experience Gomoku",
+  },
+
+  about: {
+    kicker: "ABOUT THE DEVELOPER",
+    author: "Author of Ink Realm · Mountain & River Go:",
+    name: "Titanium bullet",
+    email1Cap: "Help · Interest · Support",
+    email2Cap: "Business · Issues",
+    foot: "Ink Realm · Mountain & River Go",
+  },
+
+  mode: {
+    brand: "Ink Realm · Mountain & River Go",
+    kicker: "SELECT MODE",
+    title: "Choose Match",
+    sub: "Set the opponent and your stone, then lay down the first drop of ink.",
+    groupOpponent: "Opponent",
+    groupColor: "Stone",
+    vsAI: "vs. AI",
+    vsAIDesc: "Take Black or White and converse with GnuGo.",
+    vsHuman: "Two Players",
+    vsHumanDesc: "Black and White share the board — one stone each.",
+    blackFirst: "Take Black First",
+    blackFirstDesc: "You play Black; the AI plays White.",
+    whiteSecond: "Take White Second",
+    whiteSecondDesc: "You play White; the AI takes Black and opens.",
+    confirm: "Enter",
+    back: "Back to Ink Realm",
+  },
+
+  game: {
+    brand: "Ink Realm · Mountain & River Go",
+    backToRealm: "← Back to Ink Realm",
+    turn: "Turn",
+    moves: "Moves",
+    komi: "Komi",
+    blackCaps: "Black Caps",
+    whiteCaps: "White Caps",
+    weather: "Phase",
+    board: "Board",
+    sizeSuf: "×",
+    pass: "Pass",
+    undo: "Undo",
+    resign: "Resign",
+    muteOn: "Mute",
+    muteOff: "Sound",
+    beastsOn: "Beasts · On",
+    beastsOff: "Beasts · Off",
+    newGame: "New Game",
+    finished: "Game Over",
+    thinking: "AI is thinking…",
+    blackTurn: "Black to move",
+    whiteTurn: "White to move",
+    blackAITurn: "Black AI to move",
+    whiteAITurn: "White AI to move",
+    passHint: "One pass already — a second pass ends the game and scores it.",
+    aiErrorPrefix: "AI error: ",
+    phases: [
+      { key: "dawn", label: "Dawn" },
+      { key: "noon", label: "Noon" },
+      { key: "dusk", label: "Dusk" },
+      { key: "night", label: "Night" },
+    ],
+  },
+
+  result: {
+    endKicker: "ENDGAME",
+    draw: "Draw",
+    blackWin: "Black Wins",
+    whiteWin: "White Wins",
+    winSuffix: " Wins",
+    rematch: "Rematch",
+    review: "Review Board",
+    changeMode: "Change Mode",
+    backToRealm: "Back to Ink Realm",
+    stones: "Stones",
+    territory: "Terr.",
+    komi: "Komi",
+    scoreFoot: "Area scoring · stones + territory + komi",
+    scoreFootLong: "Area scoring (stones + territory + komi)",
+    black: "Black",
+    white: "White",
+    win: "{side} wins by {margin}",
+    resignReason: "{side} resigned",
+    tieReason: "Draw",
+  },
+
+  seal: {
+    black: "B",
+    white: "W",
+    tie: "D",
+  },
+
+  illegal: {
+    ko: "K",
+    suicide: "S",
+    other: "×",
+  },
+
+  gomoku: {
+    brand: "Ink Realm · Gomoku",
+    backToRealm: "← Back to Ink Realm",
+    turn: "Turn",
+    moves: "Moves",
+    rule: "Rule",
+    ruleVal: "Freestyle",
+    weather: "Phase",
+    goal: "Goal",
+    goalTipLead: "First to connect five wins",
+    goalTipTail: "Black & White alternate",
+    undo: "Undo",
+    resign: "Resign",
+    muteOn: "Mute",
+    muteOff: "Sound",
+    newGame: "New Game",
+    finished: "Game Over",
+    blackTurn: "Black to move",
+    whiteTurn: "White to move",
+    endKicker: "Endgame",
+    winSuffix: " Wins",
+    blackWin: "Black",
+    whiteWin: "White",
+    draw: "Draw",
+    resignReason: "{side} resigned",
+    drawReason: "Board full, no five — draw",
+    winReason: "Five in a row",
+    scoreFoot: "Freestyle Gomoku · first to connect five wins",
+    note: "{n} moves · freestyle",
+    phases: [
+      { key: "dawn", label: "Dawn" },
+      { key: "noon", label: "Noon" },
+      { key: "dusk", label: "Dusk" },
+      { key: "night", label: "Night" },
+    ],
+  },
+
+  aria: {
+    board: "Go board",
+    gomokuBoard: "Gomoku board",
+  },
+
+  langHint: {
+    message: "For a smoother & more authentic gameplay experience, switch the language to Chinese.",
+    cta: "Switch to Chinese",
+    dismiss: "Dismiss",
+  },
+};

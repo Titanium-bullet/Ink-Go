@@ -1,0 +1,286 @@
+export const zh = {
+  lang: "zh" as "zh" | "en",
+  docTitle: "墨境 山河弈",
+
+  nav: {
+    brand: "墨境",
+    rules: "规则",
+    effects: "特效",
+    weather: "天象",
+    gomoku: "连珠",
+    about: "关于",
+    play: "对弈",
+    aria: "主导航",
+  },
+
+  langToggle: {
+    zh: "中",
+    en: "EN",
+    aria: "切换语言",
+  },
+
+  hero: {
+    brand: "墨境",
+    titleA: "墨境",
+    titleB: "山河弈",
+    kicker: "INK GO STRATEGY",
+    sub: "在水墨山河中重写每一口气。",
+    desc: "一款严格遵循传统围棋规则，却让天象、墨气与棋形流动改变对弈体验的策略游戏。",
+    ctaPlay: "开始对弈",
+    ctaRules: "阅读玩法方案",
+    navRules: "规则",
+    navEffects: "特效",
+    navWeather: "天象",
+    navGomoku: "连珠",
+    navPlay: "对弈",
+  },
+
+  rules: {
+    kicker: "CORE PLAY",
+    title: "先尊重围棋，再让棋盘活过来。",
+    sub: "《墨境：山河弈》在水墨山河里还原传统围棋，让玩家像棋手，也像造境者。",
+    notes: [
+      {
+        title: "传统围棋仍是骨架",
+        copy: "气、提子、打劫、征子与终局判定一应俱全，规则严格遵循传统围棋。",
+      },
+      {
+        title: "墨韵把厚薄可视化",
+        copy: "厚势凝为玄龟，气紧化作游鱼，落子晕开墨气——棋形被翻译成活的水墨。",
+      },
+      {
+        title: "电影级的对弈体验",
+        copy: "宣纸棋盘、提子爆墨、劫争裂隙、印章结算与晨午暮夜的天象呼吸。",
+      },
+    ],
+  },
+
+  effects: {
+    kicker: "INK EFFECTS",
+    title: "特效试炼场 · 亲手点一下。",
+    desc: "所有水墨彩蛋都是规则的可视化，不改变胜负。挑选一种效果，直接在棋盘上落子触发。",
+    catalog: "彩蛋目录",
+    reset: "重置此局",
+    scenarios: [
+      {
+        name: "灵泉 · 星位",
+        tag: "山河",
+        desc: "开启墨兽时，棋盘九处星位化作灵泉——金辉自泉心向外漾开，像山河水脉在棋盘下涌动。",
+      },
+      {
+        name: "玄龟 · 厚势",
+        tag: "黑方厚势",
+        desc: "黑方凝成厚势大龙（≥6 子且气足）时，玄龟虚影于棋形中心浮现。",
+      },
+      {
+        name: "游鱼 · 气紧",
+        tag: "被打吃",
+        desc: "任一棋串仅剩一气（被打吃）时，游鱼浮现示警——把气数危机翻译成水墨意象。",
+      },
+      {
+        name: "龙脉裂隙",
+        tag: "劫争",
+        desc: "黑下 (2,1) 提走白子即成劫，劫点浮现金红裂隙；按打劫规则，对方不可立刻回提（点该处无效，正是劫争）。",
+      },
+      {
+        name: "印章结算",
+        tag: "终局",
+        desc: "终局或认输时，胜方之名盖上朱红印章。",
+      },
+    ],
+  },
+
+  weather: {
+    kicker: "DYNAMIC SKY",
+    title: "晨、午、暮、夜改变棋局的呼吸。",
+    desc: "天象随四时流转，以光影与气息的变化，为扩张、隐匿与治孤开启不同的节奏窗口",
+    phases: [
+      { name: "晨", line: "开局墨淡，外势更易铺展。" },
+      { name: "午", line: "气场最盛，光影最是通透。" },
+      { name: "暮", line: "边角光影变重，劫材更醒目。" },
+      { name: "夜", line: "孤棋隐入雾气，治孤提示更敏锐。" },
+    ],
+  },
+
+  dlc: {
+    kicker: "DLC · 连珠",
+    titleLead: "官方五子棋",
+    titleTail: "：墨境·连珠",
+    desc: "同一片山河，连珠成墨。",
+    enterGomoku: "进入连珠",
+    backToGo: "回到围棋",
+    notes: [
+      {
+        title: "自由五子棋",
+        copy: "黑白轮流落子，先在横、竖、斜任一方向连成五子者胜——无禁手，规则极简，一分钟即可上手。",
+      },
+      {
+        title: "连珠成墨",
+        copy: "五子连成的瞬间，一条墨线自起点流贯终点，把一次胜利译成一笔书法，像在山河里写下答案。",
+      },
+      {
+        title: "共享山河",
+        copy: "沿用同一张宣纸棋盘、同一片晨午暮夜的天象呼吸与木鱼落子声——围棋老友无需重新认路。",
+      },
+    ],
+  },
+
+  why: {
+    kicker: "WHY IT WORKS",
+    title: "智力胜利，被放大为可听、可见、可记住的瞬间。",
+    points: [
+      "不破坏公平性：异兽与裂隙是规则反馈，不改变胜负判定。",
+      "提供节奏感：劫材的远距离转移通过墨线变成身体感知。",
+      "强化情绪宣泄：提子、回提、吞没都成为水墨爆裂的高潮。",
+    ],
+    experienceGo: "体验围棋",
+    experienceGomoku: "体验五子棋",
+  },
+
+  about: {
+    kicker: "ABOUT THE DEVELOPER",
+    author: "墨境 山河弈作者：",
+    name: "Titanium bullet",
+    email1Cap: "帮助 · 感兴趣 · 支持",
+    email2Cap: "商业合作 · 问题",
+    foot: "墨境 · 山河弈",
+  },
+
+  mode: {
+    brand: "墨境 · 山河弈",
+    kicker: "SELECT MODE",
+    title: "择局",
+    sub: "先定对手与执子，再落第一枚墨。",
+    groupOpponent: "对手",
+    groupColor: "执子",
+    vsAI: "人机对弈",
+    vsAIDesc: "执黑或执白，与 GnuGo 对话。",
+    vsHuman: "双人对弈",
+    vsHumanDesc: "黑白同席，一人一子。",
+    blackFirst: "执黑先行",
+    blackFirstDesc: "玩家执黑，AI 执白。",
+    whiteSecond: "执白后行",
+    whiteSecondDesc: "玩家执白，AI 执黑先行。",
+    confirm: "入 局",
+    back: "返回墨境",
+  },
+
+  game: {
+    brand: "墨境 · 山河弈",
+    backToRealm: "← 返回墨境",
+    turn: "当前回合",
+    moves: "手数",
+    komi: "贴目",
+    blackCaps: "黑提",
+    whiteCaps: "白提",
+    weather: "天象",
+    board: "棋盘",
+    sizeSuf: "路",
+    pass: "虚手",
+    undo: "悔棋",
+    resign: "认输",
+    muteOn: "静音",
+    muteOff: "有声",
+    beastsOn: "墨兽 · 开",
+    beastsOff: "墨兽 · 关",
+    newGame: "新 局",
+    finished: "对局结束",
+    thinking: "AI 思考中…",
+    blackTurn: "黑方行棋",
+    whiteTurn: "白方行棋",
+    blackAITurn: "黑AI 行棋",
+    whiteAITurn: "白AI 行棋",
+    passHint: "已虚手一次，再虚手即终局计分。",
+    aiErrorPrefix: "AI 出错：",
+    phases: [
+      { key: "dawn", label: "晨" },
+      { key: "noon", label: "午" },
+      { key: "dusk", label: "暮" },
+      { key: "night", label: "夜" },
+    ],
+  },
+
+  result: {
+    endKicker: "终 局",
+    draw: "和棋",
+    blackWin: "黑方胜",
+    whiteWin: "白方胜",
+    winSuffix: " 胜",
+    rematch: "再来一局",
+    review: "回看棋局",
+    changeMode: "改模式",
+    backToRealm: "返回墨境",
+    stones: "子",
+    territory: "空",
+    komi: "贴",
+    scoreFoot: "面子规则 · 活子 + 围空 + 贴目",
+    scoreFootLong: "面子规则（活子 + 围空 + 贴目）",
+    black: "黑方",
+    white: "白方",
+    win: "{side}胜 {margin} 目",
+    resignReason: "{side}认输",
+    tieReason: "和棋",
+  },
+
+  seal: {
+    black: "黑",
+    white: "白",
+    tie: "和",
+  },
+
+  illegal: {
+    ko: "劫",
+    suicide: "禁",
+    other: "×",
+  },
+
+  gomoku: {
+    brand: "墨境 · 连珠",
+    backToRealm: "← 返回墨境",
+    turn: "当前回合",
+    moves: "手数",
+    rule: "规则",
+    ruleVal: "自由连珠",
+    weather: "天象",
+    goal: "目标",
+    goalTipLead: "连成五子者胜",
+    goalTipTail: "黑白轮落",
+    undo: "悔棋",
+    resign: "认输",
+    muteOn: "静音",
+    muteOff: "有声",
+    newGame: "新 局",
+    finished: "对局结束",
+    blackTurn: "黑方行棋",
+    whiteTurn: "白方行棋",
+    endKicker: "终局",
+    winSuffix: " 胜",
+    blackWin: "黑方",
+    whiteWin: "白方",
+    draw: "和棋",
+    resignReason: "{side}认输",
+    drawReason: "满盘未连，和棋",
+    winReason: "五子连珠",
+    scoreFoot: "自由五子棋 · 先连五子者胜",
+    note: "共 {n} 手 · 自由连珠",
+    phases: [
+      { key: "dawn", label: "晨" },
+      { key: "noon", label: "午" },
+      { key: "dusk", label: "暮" },
+      { key: "night", label: "夜" },
+    ],
+  },
+
+  aria: {
+    board: "围棋棋盘",
+    gomokuBoard: "五子棋棋盘",
+  },
+
+  langHint: {
+    message: "切换到中文，获得更地道、更流畅的墨境体验。",
+    cta: "切换中文",
+    dismiss: "关闭",
+  },
+};
+
+export type Dict = typeof zh;
