@@ -1,9 +1,10 @@
-# 墨境 · 山河弈 / Ink Realm · Mountain & River Go
+# 墨境 · 山河弈 / Ink Go
 
-> 在水墨山河中重写每一口气。一款严格遵循传统围棋规则、却让天象、墨气与棋形流动改变对弈体验的策略游戏。
+> 在水墨山河中重写每一口气。一款严格遵循传统围棋规则、并含连珠五子棋玩法,让天象、墨气与棋形流动改变对弈体验的策略游戏。
 >
-> A strategy game built on strict classical Go rules, where the heavens, ink-qi, and flowing shapes transform the way a game is played.
+> A strategy game built on strict classical Go and freestyle Gomoku, where the heavens, ink-qi, and flowing shapes transform the way a game is played.
 
+[![Live Demo](https://img.shields.io/badge/在线体验-Live_Demo-2a8c4a?logo=githubpages&logoColor=white)](https://titanium-bullet.github.io/Ink-Go/)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-2a1c0c.svg)](LICENSE)
 
 ---
@@ -22,6 +23,12 @@
 - **官方五子棋 DLC** — 同一片山河下的自由连珠,五子连成一笔书法。
 - **中英双语** — 完整 i18n,文化语境下推荐中文。
 - **单文件部署** — Vite singlefile 构建,一个 `index.html` 即可部署到任意静态托管(如 GitHub Pages)。
+
+### 在线体验
+
+👉 **[https://titanium-bullet.github.io/Ink-Go/](https://titanium-bullet.github.io/Ink-Go/)**
+
+无需安装,直接在浏览器中对弈。
 
 ### 快速开始
 
@@ -94,6 +101,12 @@ A web-based Go / Gomoku game whose visual language is **Chinese ink-wash paintin
 - **Official Gomoku DLC** — freestyle five-in-a-row on the same painted landscape.
 - **Bilingual (zh / en)** — full i18n; Chinese recommended for the cultural context.
 - **Single-file deploy** — Vite singlefile build; one `index.html` deploys to any static host (e.g. GitHub Pages).
+
+### Live Demo
+
+👉 **[https://titanium-bullet.github.io/Ink-Go/](https://titanium-bullet.github.io/Ink-Go/)**
+
+Play directly in your browser — no installation required.
 
 ### Quick Start
 
