@@ -1,4 +1,4 @@
-# 墨境 · 山河弈 / Ink Go
+# 墨境 · 山河弈 / Ink Realm · Mountain & River Go
 
 > 在水墨山河中重写每一口气。一款严格遵循传统围棋规则、并含连珠五子棋玩法,让天象、墨气与棋形流动改变对弈体验的策略游戏。
 >
@@ -80,6 +80,7 @@ npm run build
 
 - **[GNU Go](https://www.gnu.org/software/gnugo/)** — 自由软件基金会的围棋 AI,本项目使用其 WASM 编译产物(GPL-3.0)。
 - **STKaiti / 楷书字体** — 印章与标题书法呈现。
+- **背景音乐** —「Mountain Spring (full version) Chinese Music」,作者 kaazoom,Pixabay 免费下载。
 
 ### License
 
@@ -158,6 +159,7 @@ Thanks to singlefile bundling, you host a single `index.html`.
 
 - **[GNU Go](https://www.gnu.org/software/gnugo/)** — the Free Software Foundation's Go AI; this project uses its WASM build (GPL-3.0).
 - **STKaiti** — calligraphy typeface for seals and titles.
+- **Background music** — "Mountain Spring (full version) Chinese Music" by kaazoom, free download from Pixabay.
 
 ### License
 
