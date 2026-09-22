@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import AIWorker from "./worker.ts?worker&inline";
 import type { AIRequest, AIResponse } from "./worker";
+import type { AIDifficulty } from "./types";
 import type { GameState } from "../go/types";
 
 export function useAI() {
@@ -15,9 +16,8 @@ export function useAI() {
   const pendingRef = useRef<Map<number, (res: AIResponse) => void>>(new Map());
   const [workerError, setWorkerError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const spawn = useCallback((): Worker => {
     const worker = new AIWorker();
-    workerRef.current = worker;
     worker.onmessage = (e: MessageEvent<AIResponse>) => {
       const res = e.data;
       const resolve = pendingRef.current.get(res.id);
@@ -34,19 +34,26 @@ export function useAI() {
         resolve({ id, type: "error", message: e.message || "worker crashed" });
       }
     };
+    return worker;
+  }, []);
+
+  useEffect(() => {
+    workerRef.current = spawn();
     return () => {
       // 卸载前同样 reject 在途请求；terminate 后 worker 不再回包。
       for (const [id, resolve] of pendingRef.current) {
         pendingRef.current.delete(id);
         resolve({ id, type: "error", message: "worker terminated" });
       }
-      worker.terminate();
+      workerRef.current?.terminate();
       workerRef.current = null;
     };
-  }, []);
+  }, [spawn]);
 
   // 超时：worker 万一卡死（不崩溃也不回包），不能让棋盘永久锁定在 AI 回合。
   // 默认 15s——GnuGo 中盘正常 1-3s，复杂征子/读秒留足余量。
+  // 超时不仅 reject：同步卡死的 GnuGo 调用会永久占住单线程 worker，之后的
+  // 请求只能排队等死。因此 terminate 后立即重建一个新 worker。
   const send = useCallback(
     <T extends AIResponse>(req: AIRequest, timeoutMs = 15000): Promise<T> => {
       const worker = workerRef.current;
@@ -55,6 +62,10 @@ export function useAI() {
       return new Promise<T>((resolve, reject) => {
         const timer = setTimeout(() => {
           pendingRef.current.delete(id);
+          worker.terminate();
+          if (workerRef.current === worker) {
+            workerRef.current = spawn();
+          }
           reject(new Error(`AI 请求超时 (${timeoutMs}ms)`));
         }, timeoutMs);
         pendingRef.current.set(id, (res) => {
@@ -65,18 +76,33 @@ export function useAI() {
         worker.postMessage({ ...req, id });
       });
     },
-    []
+    [spawn]
   );
 
   // GnuGo 走子：把当前局面发到 worker，取回一维下标（null=虚手）。
   const genmove = useCallback(
-    (state: GameState) =>
+    (state: GameState, difficulty?: AIDifficulty) =>
       send<{ id: number; type: "genmove"; move: number | null }>({
         id: 0,
         type: "genmove",
         engine: "gnugo",
         state,
+        difficulty,
       }).then((r) => r.move),
+    [send]
+  );
+
+  // 终局比分估算（正=白领先/负=黑领先）。用于死子标记阶段的参考比分。
+  const estimate = useCallback(
+    (state: GameState) =>
+      send<{ id: number; type: "estimate"; score: number | null }>({
+        id: 0,
+        type: "estimate",
+        engine: "gnugo",
+        state,
+      })
+        .then((r) => r.score)
+        .catch(() => null),
     [send]
   );
 
@@ -84,5 +110,5 @@ export function useAI() {
   // 调用方（useGoGame）在新局 / 下次 genmove 时调用以避免红色提示常驻。
   const clearError = useCallback(() => setWorkerError(null), []);
 
-  return { genmove, workerError, clearError };
+  return { genmove, estimate, workerError, clearError };
 }

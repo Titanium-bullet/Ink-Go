@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Phase } from "../go/types";
-import bgmUrl from "../assets/bgm.mp3";
+import bgmUrl from "../assets/bgm.m4a";
 
 type Ctx = AudioContext;
 

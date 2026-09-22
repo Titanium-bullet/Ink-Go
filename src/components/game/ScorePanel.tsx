@@ -3,7 +3,14 @@ import { Score } from "../../go/types";
 import { Seal } from "./Seal";
 import { useT, format } from "../../i18n/LanguageContext";
 
-export function ScorePanel({ score }: { score: Score }) {
+export function ScorePanel({
+  score,
+  preview = false,
+}: {
+  score: Score;
+  /** 死子标记阶段：随点选即时变化的预览比分 */
+  preview?: boolean;
+}) {
   const t = useT();
   const blackWins = score.winner === BLACK;
   const winnerName =
@@ -28,10 +35,12 @@ export function ScorePanel({ score }: { score: Score }) {
         : format(t.result.win, { side: winnerName, margin: score.margin.toFixed(1) });
 
   return (
-    <div className="score-panel">
+    <div className={`score-panel${preview ? " is-preview" : ""}`}>
       <div className="score-head">
         <div>
-          <p className="score-kicker">{t.result.endKicker}</p>
+          <p className="score-kicker">
+            {preview ? t.game.marking : t.result.endKicker}
+          </p>
           <h3 className="score-title">
             {winnerName}
             {score.winner !== "tie" ? t.result.winSuffix : ""}
@@ -52,6 +61,7 @@ export function ScorePanel({ score }: { score: Score }) {
             stones={score.blackStones}
             territory={score.blackTerritory}
             komi={0}
+            dead={score.deadBlack}
             highlight={blackWins}
           />
           <ScoreRow
@@ -60,6 +70,7 @@ export function ScorePanel({ score }: { score: Score }) {
             stones={score.whiteStones}
             territory={score.whiteTerritory}
             komi={score.komi}
+            dead={score.deadWhite}
             highlight={!blackWins && score.winner !== "tie"}
           />
         </div>
@@ -75,6 +86,7 @@ function ScoreRow({
   stones,
   territory,
   komi,
+  dead,
   highlight,
 }: {
   name: string;
@@ -82,6 +94,7 @@ function ScoreRow({
   stones: number;
   territory: number;
   komi: number;
+  dead: number;
   highlight: boolean;
 }) {
   const t = useT();
@@ -92,6 +105,7 @@ function ScoreRow({
         <span>{t.result.stones} {stones}</span>
         <span>{t.result.territory} {territory}</span>
         {komi > 0 && <span>{t.result.komi} {komi}</span>}
+        {dead > 0 && <span className="score-dead">{t.result.dead} {dead}</span>}
       </div>
       <span className="score-total">{area.toFixed(1)}</span>
     </div>

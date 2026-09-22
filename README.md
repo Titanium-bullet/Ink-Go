@@ -15,11 +15,14 @@
 
 ### 特性
 
-- **传统围棋骨架** — 气、提子、打劫、自杀手禁则、终局面子规则数子,一应俱全。
-- **GnuGo AI 对弈** — 内嵌 [GNU Go](https://www.gnu.org/software/gnugo/) 的 WebAssembly 编译产物,完全离线,无需服务端。
-- **墨兽可视化** — 厚势凝为「玄龟」,气紧化作「游鱼」,棋形被翻译成活的水墨意象。
+- **传统围棋骨架** — 气、提子、打劫、自杀手禁则、终局数子,一应俱全。
+- **死子标记终局** — 两次虚着后进入点选死子阶段,实时预览比分,人机模式下附 GnuGo 估算参考。
+- **棋士与国手** — 两位水墨人物对手,内嵌 [GNU Go](https://www.gnu.org/software/gnugo/) 的 WebAssembly 编译产物,完全离线:棋士由适配层概率性替换合理缓手(该 wasm 产物的等级编译期固定、无导出可调),国手为 GnuGo 原始强度。
+- **墨兽可视化** — 厚势凝为「玄龟」(六边形甲片金线勾边,体型随棋串生长),气紧化作「游鱼」(金鲤摆尾示警),星位化作灵泉水脉——棋形被翻译成活的水墨意象。
+- **墨涌·屠龙** — 一手提走四子以上,全盘墨浪自提子处涌起翻卷,大转换的水墨注脚(「墨境特效包」彩蛋之一)。
 - **四时天象** — 晨、午、暮、夜,光影与气息随天象流转,改变对弈的呼吸节奏。
-- **电影级结算** — 提子爆墨、劫争裂隙、印章盖印、墨线成字。
+- **电影级结算** — 落子双圈墨晕、最后一手金圈常驻标记、提子爆墨飞溅、劫争裂隙、印章盖印、墨线成字。
+- **规则古纸卷** — 发黄宣纸上以草书书写的双语围棋规则:中文行楷配汉字序号,英文手写体配罗马数字,如展一卷旧谱。
 - **官方五子棋 DLC** — 同一片山河下的自由连珠,五子连成一笔书法。
 - **中英双语** — 完整 i18n,文化语境下推荐中文。
 - **单文件部署** — Vite singlefile 构建,一个 `index.html` 即可部署到任意静态托管(如 GitHub Pages)。
@@ -38,6 +41,7 @@ npm run dev          # 本地开发 (http://localhost:5173)
 npm run build        # 生产构建 → dist/index.html
 npm run preview      # 预览生产构建
 npm test             # 引擎自测 (围棋规则 + SGF 序列化 + WASM 原型)
+npm run test:e2e     # Playwright UI 冒烟测试
 npm run typecheck    # TypeScript 严格类型检查
 ```
 
@@ -64,6 +68,7 @@ src/
 ├── components/  game/ · gomoku/ · landing/ 组件
 ├── i18n/        zh.ts / en.ts 双语字典
 └── App.tsx      视图路由
+e2e/             Playwright UI 冒烟测试
 scripts/         引擎自测 + GnuGo WASM 生成脚本
 ```
 
@@ -95,10 +100,13 @@ A web-based Go / Gomoku game whose visual language is **Chinese ink-wash paintin
 ### Features
 
 - **Classical Go, intact** — liberties, captures, ko, suicide prohibition, area scoring — all here.
-- **GnuGo AI** — ships an inline [GNU Go](https://www.gnu.org/software/gnugo/) WebAssembly build; fully offline, no server required.
-- **Ink beasts** — great influence gathers into a "Mystic Tortoise"; a liberty shortage becomes a "Darting Fish"; every shape becomes living ink.
+- **Dead-stone marking** — two passes enter a tap-to-mark phase with a live score preview; in AI games GnuGo's estimate is shown for reference.
+- **Kishi & Guoshou** — two ink-painted opponents powered by an inline [GNU Go](https://www.gnu.org/software/gnugo/) WebAssembly build, fully offline: the Kishi (scholar) is implemented by probabilistically swapping in plausible slack moves (the wasm build's level is fixed at compile time with no exported control), the Guoshou (master) plays raw GnuGo.
+- **Ink beasts** — great influence gathers into a Mystic Tortoise (hexagonal plates edged in gold, growing with the group); a liberty shortage becomes a darting golden carp; star points turn into quiet spirit springs — every shape becomes living ink.
+- **Ink Surge** — capture four or more stones with a single move and an ink wave surges across the whole board (part of the "Ink Effects" pack).
 - **Four phases of sky** — dawn, noon, dusk, night shift light and breath across the board.
-- **Cinematic verdicts** — capture bursts, ko rifts, vermilion seal stamps, ink-brush win lines.
+- **Cinematic verdicts** — double-ring stone ripples, a persistent gold ring on the last move, capture bursts with ink flecks, ko rifts, vermilion seal stamps, ink-brush win lines.
+- **Rules on aged paper** — the rules of Go written in brush script on yellowed paper: Chinese in running script with numeral ordinals, English in cursive with Roman numerals, like unrolling an old manual.
 - **Official Gomoku DLC** — freestyle five-in-a-row on the same painted landscape.
 - **Bilingual (zh / en)** — full i18n; Chinese recommended for the cultural context.
 - **Single-file deploy** — Vite singlefile build; one `index.html` deploys to any static host (e.g. GitHub Pages).
@@ -117,6 +125,7 @@ npm run dev          # dev server (http://localhost:5173)
 npm run build        # production build → dist/index.html
 npm run preview      # preview the build
 npm test             # engine selftest (Go rules + SGF + WASM smoke)
+npm run test:e2e     # Playwright UI smoke tests
 npm run typecheck    # strict TypeScript check
 ```
 
@@ -143,6 +152,7 @@ src/
 ├── components/  game/ · gomoku/ · landing/
 ├── i18n/        zh.ts / en.ts dictionaries
 └── App.tsx      view routing
+e2e/             Playwright UI smoke tests
 scripts/         engine selftest + GnuGo WASM generation
 ```
 

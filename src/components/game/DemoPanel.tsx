@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Goban } from "./Goban";
 import { ScorePanel } from "./ScorePanel";
 import { useSound } from "../../hooks/useSound";
@@ -6,9 +6,9 @@ import { createGame, playMove, resign, finalScore } from "../../go/engine";
 import { BLACK, WHITE, GameState } from "../../go/types";
 import { useT } from "../../i18n/LanguageContext";
 
-type Key = "spring" | "turtle" | "fish" | "ko" | "seal";
+type Key = "spring" | "turtle" | "fish" | "ko" | "seal" | "dragon";
 
-const SCENARIO_KEYS: Key[] = ["spring", "turtle", "fish", "ko", "seal"];
+const SCENARIO_KEYS: Key[] = ["spring", "turtle", "fish", "ko", "seal", "dragon"];
 
 function preset(black: number[], white: number[], turn = BLACK): GameState {
   const g = createGame(9, 6.5);
@@ -38,6 +38,14 @@ function build(key: Key): GameState {
       const g = preset([0, 1, 2, 9, 10, 18, 19], [72, 73, 74, 80, 81], WHITE);
       return resign(g);
     }
+    case "dragon":
+      // white column (4,2)..(4,6) in atari at (4,1): black to play 13 = (4,1),
+      // captures the five-stone dragon -> 墨涌 surges across the board.
+      return preset(
+        [21, 23, 30, 32, 39, 41, 48, 50, 57, 59, 67],
+        [22, 31, 40, 49, 58],
+        BLACK
+      );
   }
 }
 
@@ -60,7 +68,10 @@ export function DemoPanel() {
   };
 
   const current = t.effects.scenarios[SCENARIO_KEYS.indexOf(scenario)];
-  const score = state.finished ? finalScore(state) : null;
+  const score = useMemo(
+    () => (state.finished ? finalScore(state) : null),
+    [state]
+  );
 
   return (
     <div className="demo-panel grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">

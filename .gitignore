@@ -28,3 +28,10 @@ Thumbs.db
 # Vite / TS cache
 *.tsbuildinfo
 .vite/
+
+# ZCode session artifacts
+.zcode/
+
+# Playwright
+/test-results/
+/playwright-report/

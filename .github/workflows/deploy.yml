@@ -30,6 +30,12 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Typecheck (strict)
+        run: npm run typecheck
+
+      - name: Engine tests (Go rules + SGF + WASM smoke)
+        run: npm test
+
       - name: Build (vite singlefile → dist/index.html)
         run: npm run build
 

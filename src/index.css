@@ -1,11 +1,30 @@
 @import "tailwindcss";
 
+/* 锚点丝滑滚动 + 吸顶导航不遮目标标题；reduced-motion 由全局兜底压回 auto */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
 :root {
   color-scheme: light;
   font-family:
     "Noto Serif SC", "Songti SC", "STSong", "SimSun", "Microsoft YaHei",
     serif;
   background: #f4efe4;
+
+  /* 设计 token：墨 / 纸 / 金 三族（金色由约 10 个近似值收敛为三档） */
+  --ink-0: #0a0807;
+  --ink-1: #17120f;
+  --ink-2: #201916;
+  --paper-0: #f4efe4;
+  --paper-1: #efe5d3;
+  --paper-2: #d8cfc0;
+  --gold-1: #d8b36e;
+  --gold-2: #b79d72;
+  --gold-3: #e6a747;
+  /* 全局可用金色（原先只在 .play-view 定义，落地页 LangToggle 旋钮取不到值） */
+  --gold: var(--gold-1);
 }
 
 * {
@@ -29,6 +48,15 @@ a {
 
 ::selection {
   background: #201916;
+  color: #f4efe4;
+}
+
+/* 深色区段：选区用金色带呈现，一眼可辨是「选中」而非高亮故障 */
+#about ::selection,
+.play-view ::selection,
+.mode-select ::selection,
+.result-overlay ::selection {
+  background: rgba(216, 179, 110, 0.38);
   color: #f4efe4;
 }
 
@@ -99,369 +127,207 @@ a {
   background: rgba(244, 239, 228, 0.1);
 }
 
-.hero-board {
-  filter: drop-shadow(0 40px 80px rgba(0, 0, 0, 0.45));
-  transform-origin: 50% 50%;
-}
-
 .dragon-glow {
-  animation: svg-dragon-pulse 2.7s ease-in-out infinite;
-  transform-origin: 355px 305px;
+  /* 静态辉光：原逐帧脉动会让整块全屏 SVG 重光栅化，动势交给 .hero-breath */
+  opacity: 0.85;
 }
 
-.hero-ink-line {
-  animation: ink-stroke 2.8s ease-in-out infinite;
-  stroke-dasharray: 380;
-  stroke-dashoffset: 380;
+/* 三层视差包裹层：transform 由 useHeroParallax 直写（不用 CSS 变量/transition） */
+.hero-layer {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  will-change: transform;
 }
 
-.stone-pulse {
-  animation: stone-pulse 2.7s ease-in-out infinite;
-  transform-origin: 355px 305px;
+.hero-layer-svg {
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
-.ink-beast-shadow {
-  animation: beast-breathe 4.8s ease-in-out infinite;
-  transform-origin: 380px 315px;
-}
-
-.mountain-drift {
-  animation: mountain-drift 11s ease-in-out infinite alternate;
-}
-
-.mountain-drift-slow {
-  animation: mountain-drift-slow 15s ease-in-out infinite alternate;
-}
-
-.crane-flight {
+/* 鹤群：整只 SVG 元素做 transform 飞行（HTML 盒级动画 = 合成器友好） */
+.hero-cranes {
   animation: crane-flight 9s ease-in-out infinite;
 }
 
-.terrain-stage {
-  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.35);
-}
-
-.terrain-grid,
-.ko-grid {
-  background-image: linear-gradient(rgba(244, 239, 228, 0.28) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(244, 239, 228, 0.28) 1px, transparent 1px);
-  background-size: 10% 10%;
-  mask-image: radial-gradient(circle, #000 62%, transparent 76%);
-}
-
-.terrain-fog {
-  animation: fog-drift 12s linear infinite;
-  background:
-    radial-gradient(circle at 20% 50%, rgba(244, 239, 228, 0.1), transparent 18%),
-    radial-gradient(circle at 60% 25%, rgba(122, 152, 171, 0.16), transparent 18%),
-    radial-gradient(circle at 80% 72%, rgba(216, 179, 110, 0.12), transparent 19%);
-  inset: -18%;
+/* 全屏呼吸光：柔和的琥珀光晕缓慢明暗，替代棋盘内脉动 */
+.hero-breath {
+  animation: hero-breath 7s ease-in-out infinite alternate;
+  background: radial-gradient(
+    circle at 68% 26%,
+    rgba(230, 167, 71, 0.16),
+    rgba(230, 167, 71, 0.05) 34%,
+    transparent 60%
+  );
+  inset: 0;
   position: absolute;
 }
 
-.terrain-node {
-  align-items: center;
-  animation: terrain-pulse 3.8s ease-in-out infinite;
-  border: 1px solid rgba(244, 239, 228, 0.32);
-  color: #f4efe4;
-  display: flex;
-  height: 5.8rem;
-  justify-content: center;
-  letter-spacing: 0.18em;
+@keyframes hero-breath {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+/* 日轮：有形圆盘（盘面 + 外光环），棋盘上方缓弧运行 */
+.hero-sun {
+  animation: hero-sun-arc 46s ease-in-out infinite alternate;
+  /* 右上角更靠右：棋盘已收右下（顶缘约 20% 高），11vmin 日轮不再被遮 */
+  height: 11vmin;
   position: absolute;
-  transform: translate(-50%, -50%);
-  width: 5.8rem;
+  right: 1%;
+  top: 7%;
+  width: 11vmin;
 }
 
-.terrain-node::before {
-  border: 1px solid currentColor;
-  content: "";
-  inset: 0.65rem;
-  opacity: 0.32;
-  position: absolute;
-  transform: rotate(45deg);
-}
-
-.terrain-node-0 {
-  background: radial-gradient(circle, rgba(16, 16, 18, 0.92), rgba(16, 16, 18, 0.12) 62%, transparent 70%);
-}
-
-.terrain-node-1 {
-  animation-delay: 500ms;
-  background: radial-gradient(circle, rgba(215, 238, 245, 0.35), rgba(83, 130, 151, 0.18) 52%, transparent 72%);
-}
-
-.terrain-node-2 {
-  animation-delay: 980ms;
-  background: radial-gradient(circle, rgba(244, 239, 228, 0.18), rgba(244, 239, 228, 0.06) 52%, transparent 72%);
-}
-
-.stone {
-  border-radius: 999px;
-  height: 2.2rem;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  width: 2.2rem;
-}
-
-.stone-black {
-  background: radial-gradient(circle at 35% 30%, #443832, #080706 65%);
-  box-shadow: 0 0 22px rgba(0, 0, 0, 0.6);
-}
-
-.stone-white {
-  background: radial-gradient(circle at 35% 30%, #ffffff, #d7ccb8 68%);
-  box-shadow: 0 0 22px rgba(244, 239, 228, 0.4);
-}
-
-.ink-breath {
-  animation: ink-breath 2.9s ease-out infinite;
-  background: radial-gradient(circle, rgba(4, 4, 4, 0.45), rgba(4, 4, 4, 0.1) 50%, transparent 72%);
-  border-radius: 999px;
-  height: 10rem;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  width: 10rem;
-}
-
-.weather-river {
-  position: relative;
-}
-
-.weather-river::before {
-  animation: weather-river 8s ease-in-out infinite;
-  background: linear-gradient(90deg, transparent, rgba(183, 157, 114, 0.8), transparent);
-  content: "";
-  height: 1px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-
-.weather-phase:nth-child(2) {
-  animation-delay: 120ms;
-}
-
-.weather-phase:nth-child(3) {
-  animation-delay: 240ms;
-}
-
-.weather-phase:nth-child(4) {
-  animation-delay: 360ms;
-}
-
-.ko-board {
-  aspect-ratio: 1;
-  background:
-    radial-gradient(circle at 52% 48%, rgba(218, 143, 63, 0.18), transparent 20%),
-    linear-gradient(135deg, #3a281b, #b9955a 45%, #684528);
-  border: 1px solid rgba(32, 25, 22, 0.18);
-  box-shadow: inset 0 0 70px rgba(32, 25, 22, 0.32), 0 35px 80px rgba(32, 25, 22, 0.16);
-  margin-inline: auto;
-  max-width: 660px;
-  overflow: hidden;
-  position: relative;
-  width: 100%;
-}
-
-.ko-grid {
-  inset: 8%;
-  mask-image: radial-gradient(circle, #000 70%, transparent 86%);
-  position: absolute;
-}
-
-.ko-board::after {
-  background:
-    linear-gradient(90deg, transparent, rgba(32, 25, 22, 0.2), transparent),
-    linear-gradient(rgba(255, 255, 255, 0.06), transparent 38%, rgba(0, 0, 0, 0.16));
+.hero-sun::before {
+  background: radial-gradient(
+    circle,
+    #f9ecc0 0%,
+    #ecc684 58%,
+    rgba(236, 198, 132, 0.28) 84%,
+    transparent 100%
+  );
+  border-radius: 50%;
   content: "";
   inset: 0;
-  pointer-events: none;
   position: absolute;
 }
 
-.ko-rift {
-  animation: dragon-pulse 2s ease-in-out infinite;
+.hero-sun::after {
+  border: 1px solid rgba(251, 230, 173, 0.38);
+  border-radius: 50%;
+  content: "";
+  inset: -34%;
+  position: absolute;
+}
+
+@keyframes hero-sun-arc {
+  from {
+    transform: translate(-2vw, 2.5vh) scale(0.97);
+  }
+  to {
+    transform: translate(1.6vw, -2vh) scale(1.03);
+  }
+}
+
+/* 河流：独立层整体呼吸（山谷微光明灭，HTML 盒级动画） */
+.hero-river {
+  animation: hero-river-breathe 9s ease-in-out infinite alternate;
+}
+
+@keyframes hero-river-breathe {
+  from {
+    opacity: 0.68;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 最近山脊 + 山脚雾带 */
+.hero-near {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.hero-fog {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(244, 239, 228, 0.04) 38%,
+    rgba(244, 239, 228, 0.08) 62%,
+    transparent
+  );
+  bottom: -2%;
+  height: 36%;
+  inset-inline: -12%;
+  position: absolute;
+}
+
+.hero-fog-a {
+  animation: fog-drift 24s ease-in-out infinite alternate;
+}
+
+.hero-fog-b {
+  animation: fog-drift 32s ease-in-out infinite alternate-reverse;
+  bottom: -8%;
+  opacity: 0.7;
+}
+
+/* 云海：山峦与棋盘之间的流云带（整体平移） */
+.hero-clouds {
+  inset: 0;
+  position: absolute;
+}
+
+.hero-clouds span {
+  animation: hero-cloud-drift 42s ease-in-out infinite alternate;
   background:
-    radial-gradient(circle, rgba(250, 185, 76, 0.88), rgba(132, 43, 29, 0.34) 42%, transparent 68%),
-    conic-gradient(from 40deg, transparent, rgba(20, 29, 48, 0.65), transparent, rgba(221, 127, 43, 0.5), transparent);
-  height: 25%;
-  left: 50%;
-  opacity: 0.75;
+    radial-gradient(ellipse 58% 40% at 34% 64%, rgba(214, 222, 238, 0.07), transparent 70%),
+    radial-gradient(ellipse 44% 34% at 70% 48%, rgba(244, 239, 228, 0.06), transparent 72%),
+    radial-gradient(ellipse 36% 28% at 12% 74%, rgba(240, 226, 200, 0.05), transparent 70%);
+  inset: -6% -20%;
   position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 25%;
 }
 
-.ko-chaos {
-  background: radial-gradient(circle, rgba(9, 8, 7, 0.9), rgba(9, 8, 7, 0.45) 48%, transparent 70%);
-  border-radius: 999px;
-  height: 19%;
-  left: 50%;
-  opacity: 0;
+.hero-clouds span:nth-child(2) {
+  animation-duration: 54s;
+  animation-delay: -22s;
+  opacity: 0.8;
+  transform: translateY(9vh) scale(1.14);
+}
+
+.hero-clouds span:nth-child(3) {
+  animation-duration: 48s;
+  animation-delay: -34s;
+  opacity: 0.55;
+  transform: translateY(17vh) scale(1.28);
+}
+
+@keyframes hero-cloud-drift {
+  from {
+    translate: -4% 0;
+  }
+  to {
+    translate: 4% 0;
+  }
+}
+
+/* 斜光柱：极低透明度的暖光，非常慢地摆动 */
+.hero-shafts {
+  animation: hero-shafts-turn 90s linear infinite alternate;
+  /* 光柱锥点跟随右上角日轮中心（right:1% + 11vmin 一半 ≈ 93% 宽、12% 高） */
+  background: conic-gradient(
+    from 208deg at 93% 12%,
+    transparent 0deg,
+    rgba(240, 200, 130, 0.06) 6deg,
+    transparent 13deg,
+    rgba(240, 200, 130, 0.05) 20deg,
+    transparent 28deg
+  );
+  inset: -30%;
   position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  transition: opacity 350ms ease, transform 350ms ease;
-  width: 19%;
 }
 
-.ko-board.sealed .ko-chaos {
-  animation: chaos-lock 1.2s ease-in-out infinite;
-  opacity: 1;
-}
-
-.ko-line {
-  background: linear-gradient(90deg, transparent 0%, rgba(5, 5, 5, 0.95) 45%, rgba(245, 239, 226, 0.8) 55%, transparent 100%);
-  height: 4px;
-  left: 20%;
-  opacity: 0;
-  position: absolute;
-  top: 20%;
-  transform: rotate(43deg);
-  transform-origin: left center;
-  width: 48%;
-}
-
-.ko-board.line .ko-line,
-.ko-board.tiger .ko-line,
-.ko-board.beasts .ko-line {
-  animation: ko-line 1.25s ease-in-out infinite;
-  opacity: 1;
-}
-
-.ko-tiger {
-  border: 2px solid rgba(12, 10, 8, 0.7);
-  border-left-color: transparent;
-  border-radius: 54% 46% 52% 48%;
-  height: 22%;
-  left: 50%;
-  opacity: 0;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%) scale(0.72) rotate(-20deg);
-  transition: opacity 300ms ease, transform 300ms ease;
-  width: 28%;
-}
-
-.ko-tiger::before,
-.ko-tiger::after {
-  background: #090807;
-  border-radius: 999px;
-  content: "";
-  height: 0.7rem;
-  position: absolute;
-  top: 42%;
-  width: 0.7rem;
-}
-
-.ko-tiger::before {
-  left: 30%;
-}
-
-.ko-tiger::after {
-  right: 24%;
-}
-
-.ko-board.tiger .ko-tiger,
-.ko-board.beasts .ko-tiger {
-  animation: tiger-bite 1.9s ease-in-out infinite;
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1) rotate(-20deg);
-}
-
-.ko-turtle,
-.ko-cranes {
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  transition: opacity 300ms ease;
-}
-
-.ko-turtle {
-  background: radial-gradient(circle, rgba(5, 5, 5, 0.78), rgba(5, 5, 5, 0.08) 68%, transparent 72%);
-  border: 1px solid rgba(5, 5, 5, 0.5);
-  border-radius: 48% 52% 45% 55%;
-  height: 32%;
-  left: 24%;
-  top: 54%;
-  width: 38%;
-}
-
-.ko-cranes {
-  height: 45%;
-  right: 8%;
-  top: 8%;
-  width: 40%;
-}
-
-.ko-cranes::before,
-.ko-cranes::after {
-  border-top: 3px solid rgba(244, 239, 228, 0.8);
-  content: "";
-  height: 4rem;
-  position: absolute;
-  transform: rotate(-18deg);
-  width: 8rem;
-}
-
-.ko-cranes::before {
-  border-radius: 80% 20% 0 0;
-  left: 4%;
-  top: 18%;
-}
-
-.ko-cranes::after {
-  border-radius: 20% 80% 0 0;
-  left: 38%;
-  top: 46%;
-}
-
-.ko-board.beasts .ko-turtle {
-  animation: beast-breathe 3.8s ease-in-out infinite;
-  opacity: 1;
-}
-
-.ko-board.beasts .ko-cranes {
-  animation: crane-flight 4.6s ease-in-out infinite;
-  opacity: 1;
-}
-
-.ko-stone {
-  border-radius: 999px;
-  height: 5.5%;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  width: 5.5%;
-  z-index: 2;
-}
-
-.ko-stone.black {
-  background: radial-gradient(circle at 35% 30%, #40352e, #070605 70%);
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.45);
-}
-
-.ko-stone.white {
-  background: radial-gradient(circle at 35% 30%, #ffffff, #d9d0bf 72%);
-  box-shadow: 0 0 18px rgba(255, 255, 255, 0.28);
-}
-
-.ko-seeker {
-  animation: seeker-drop 2.1s ease-in-out infinite;
-  left: 20%;
-  top: 20%;
-}
-
-.ko-caption {
-  bottom: 8%;
-  color: rgba(244, 239, 228, 0.78);
-  font-size: 0.85rem;
-  letter-spacing: 0.3em;
-  position: absolute;
-  right: 8%;
-  z-index: 3;
+@keyframes hero-shafts-turn {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
 }
 
 .beast-wash {
@@ -469,72 +335,6 @@ a {
     radial-gradient(circle at 20% 10%, rgba(216, 179, 110, 0.13), transparent 22%),
     radial-gradient(circle at 76% 55%, rgba(244, 239, 228, 0.08), transparent 24%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 45%);
-}
-
-.beast-panel {
-  min-height: 34rem;
-  position: relative;
-}
-
-.beast-figure {
-  height: 24rem;
-  overflow: hidden;
-  position: relative;
-}
-
-.beast-orb,
-.beast-form {
-  position: absolute;
-}
-
-.beast-orb {
-  border-radius: 999px;
-}
-
-.orb-a {
-  animation: ink-breath 3.8s ease-in-out infinite;
-  height: 16rem;
-  left: 10%;
-  top: 18%;
-  width: 16rem;
-}
-
-.orb-b {
-  animation: ink-breath 4.5s ease-in-out infinite reverse;
-  height: 10rem;
-  right: 16%;
-  top: 8%;
-  width: 10rem;
-}
-
-.beast-form {
-  animation: beast-breathe 5s ease-in-out infinite;
-  inset: 22% 12% 8% 8%;
-}
-
-.beast-panel.black .orb-a,
-.beast-panel.black .orb-b {
-  background: radial-gradient(circle, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.1) 64%, transparent 72%);
-}
-
-.beast-panel.black .beast-form {
-  background:
-    radial-gradient(ellipse at 35% 50%, rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.12) 58%, transparent 70%),
-    linear-gradient(120deg, transparent 20%, rgba(0, 0, 0, 0.72), transparent 76%);
-  border: 1px solid rgba(244, 239, 228, 0.12);
-  border-radius: 48% 52% 45% 55%;
-}
-
-.beast-panel.white .orb-a,
-.beast-panel.white .orb-b {
-  background: radial-gradient(circle, rgba(244, 239, 228, 0.66), rgba(244, 239, 228, 0.1) 64%, transparent 72%);
-}
-
-.beast-panel.white .beast-form {
-  background:
-    linear-gradient(30deg, transparent 15%, rgba(244, 239, 228, 0.72), transparent 48%),
-    linear-gradient(150deg, transparent 20%, rgba(244, 239, 228, 0.58), transparent 52%);
-  clip-path: polygon(0 62%, 25% 35%, 50% 58%, 76% 30%, 100% 54%, 76% 60%, 50% 80%, 24% 58%);
 }
 
 @keyframes rise-in {
@@ -548,82 +348,55 @@ a {
   }
 }
 
-@keyframes svg-dragon-pulse {
-  0%,
-  100% {
-    opacity: 0.42;
-    transform: scale(0.92);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
-}
-
-@keyframes dragon-pulse {
-  0%,
-  100% {
-    opacity: 0.42;
-    transform: translate(-50%, -50%) scale(0.92);
-  }
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.08);
-  }
-}
-
-@keyframes ink-stroke {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: 380;
-  }
-  22% {
-    opacity: 1;
-  }
-  55%,
-  100% {
-    opacity: 0;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes stone-pulse {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 0 rgba(232, 167, 71, 0));
-    transform: scale(1);
-  }
-  50% {
-    filter: drop-shadow(0 0 18px rgba(232, 167, 71, 0.9));
-    transform: scale(1.14);
-  }
-}
-
 @keyframes beast-breathe {
   0%,
   100% {
-    transform: scale(0.96) rotate(-1deg);
+    transform: scale(0.94) rotate(-1.5deg);
   }
   50% {
-    transform: scale(1.04) rotate(1deg);
+    transform: scale(1.06) rotate(1.5deg);
   }
 }
 
-@keyframes mountain-drift {
+@keyframes beast-emerge {
   from {
-    transform: translate3d(-18px, 0, 0);
+    opacity: 0;
+    transform: scale(0.5) rotate(-6deg);
   }
   to {
-    transform: translate3d(22px, -8px, 0);
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
   }
 }
 
-@keyframes mountain-drift-slow {
-  from {
-    transform: translate3d(20px, 12px, 0);
+/* 玄龟墨云：两缕相向缓移，在龟甲下翻涌 */
+@keyframes cloud-drift-a {
+  0%,
+  100% {
+    transform: translate(-0.14, 0.04) scale(1);
   }
-  to {
-    transform: translate3d(-24px, 0, 0);
+  50% {
+    transform: translate(0.18, -0.05) scale(1.12);
+  }
+}
+
+@keyframes cloud-drift-b {
+  0%,
+  100% {
+    transform: translate(0.16, -0.03) scale(1.08);
+  }
+  50% {
+    transform: translate(-0.2, 0.06) scale(0.92);
+  }
+}
+
+@keyframes fish-sway {
+  0%,
+  100% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(6deg);
   }
 }
 
@@ -646,91 +419,6 @@ a {
   }
 }
 
-@keyframes terrain-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 rgba(244, 239, 228, 0);
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    box-shadow: 0 0 34px rgba(244, 239, 228, 0.18);
-    transform: translate(-50%, -50%) scale(1.06);
-  }
-}
-
-@keyframes ink-breath {
-  0%,
-  100% {
-    opacity: 0.28;
-    transform: translate(-50%, -50%) scale(0.72);
-  }
-  60% {
-    opacity: 0.78;
-    transform: translate(-50%, -50%) scale(1.08);
-  }
-}
-
-@keyframes weather-river {
-  0%,
-  100% {
-    opacity: 0.2;
-    transform: scaleX(0.3);
-    transform-origin: left center;
-  }
-  50% {
-    opacity: 0.75;
-    transform: scaleX(1);
-    transform-origin: left center;
-  }
-}
-
-@keyframes chaos-lock {
-  0%,
-  100% {
-    filter: blur(0);
-    transform: translate(-50%, -50%) scale(0.92);
-  }
-  50% {
-    filter: blur(2px);
-    transform: translate(-50%, -50%) scale(1.05) rotate(6deg);
-  }
-}
-
-@keyframes ko-line {
-  0% {
-    opacity: 0;
-    transform: rotate(43deg) scaleX(0.1);
-  }
-  25% {
-    opacity: 1;
-  }
-  70%,
-  100% {
-    opacity: 0;
-    transform: rotate(43deg) scaleX(1.08);
-  }
-}
-
-@keyframes tiger-bite {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
-  }
-  50% {
-    filter: drop-shadow(0 0 24px rgba(0, 0, 0, 0.82));
-  }
-}
-
-@keyframes seeker-drop {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.18);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -739,16 +427,6 @@ a {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 1ms !important;
-  }
-}
-
-@media (max-width: 700px) {
-  .ko-controls button {
-    flex: 1 1 100%;
-  }
-
-  .beast-figure {
-    height: 18rem;
   }
 }
 
@@ -863,17 +541,19 @@ a {
 }
 
 .turn-stone {
-  background: radial-gradient(circle at 35% 30%, #5a4a40, #050403 70%);
+  background:
+    radial-gradient(circle at 30% 22%, rgba(188, 164, 143, 0.5) 0%, rgba(188, 164, 143, 0) 42%),
+    radial-gradient(circle at 34% 28%, #7a665a 0%, #332a24 30%, #120d0a 70%, #040302 100%);
   border-radius: 999px;
-  box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), inset 0 0 3px rgba(0, 0, 0, 0.5);
   flex: none;
   height: 2.2rem;
   width: 2.2rem;
 }
 
 .turn-stone.is-white {
-  background: radial-gradient(circle at 35% 30%, #ffffff, #c9bda4 72%);
-  box-shadow: 0 0 18px rgba(244, 239, 228, 0.4);
+  background: radial-gradient(circle at 34% 28%, #ffffff 0%, #f3ecdc 45%, #d8c9a8 80%, #b8a784 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 0 4px rgba(0, 0, 0, 0.08);
 }
 
 .turn-stone.is-dim {
@@ -912,6 +592,33 @@ a {
   color: #d8b36e;
   font-size: 0.8rem;
   margin-top: 0.6rem;
+}
+
+/* ---- 死子标记阶段 ---- */
+.marking-hints {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
+.marking-hints p {
+  margin: 0;
+}
+
+.marking-hints .score-hint {
+  color: #896b41;
+}
+
+.dead-stone {
+  transition: opacity 180ms ease;
+}
+
+.score-panel.is-preview .seal-stamp {
+  opacity: 0.55;
+}
+
+.score-dead {
+  color: #b3402e;
 }
 
 .capture-block .panel-val {
@@ -1138,6 +845,50 @@ a {
   transition: fill 1400ms ease;
 }
 
+/* 河光：独立 SVG 层整体呼吸（山谷微光明灭，HTML 盒级动画） */
+.atmo-river {
+  animation: atmo-river-breathe 10s ease-in-out infinite alternate;
+  bottom: 0;
+  height: 42vh;
+  left: 0;
+  position: absolute;
+  width: 100%;
+}
+
+@keyframes atmo-river-breathe {
+  from {
+    opacity: 0.62;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 山脚雾带：HTML 层漂移，替代原山峦逐帧动画的动势 */
+.atmo-fog {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(244, 239, 228, 0.045) 38%,
+    rgba(244, 239, 228, 0.085) 62%,
+    transparent
+  );
+  bottom: -2%;
+  height: 40%;
+  inset-inline: -12%;
+  position: absolute;
+}
+
+.atmo-fog-a {
+  animation: fog-drift 26s ease-in-out infinite alternate;
+}
+
+.atmo-fog-b {
+  animation: fog-drift 34s ease-in-out infinite alternate-reverse;
+  bottom: -8%;
+  opacity: 0.72;
+}
+
 .ink-mote {
   animation: mote-float 14s ease-in-out infinite;
   background: radial-gradient(circle, var(--gold), transparent 70%);
@@ -1167,12 +918,12 @@ a {
   transition: box-shadow 1400ms ease;
 }
 
-/* ---- 棋子落子墨渊 / 提子散墨 / 勃点裂隙 ---- */
+/* ---- 棋子落子墨渊 / 提子散墨 / 劫点裂隙 ---- */
 .goban .ink-ripple,
 .goban .burst-ring,
 .goban .burst-bloom,
 .goban .ko-rift-svg,
-.goban .last-glow {
+.goban .last-ring {
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -1181,20 +932,82 @@ a {
   animation: ink-ripple 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* 第二圈回声涟漪：小半径 + 延迟错相，水滴入水的双环感 */
+.ink-ripple--echo {
+  animation-delay: 160ms;
+}
+
 .burst-bloom {
-  animation: burst-bloom 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* 时长与 Goban.tsx 的 BURST_MS 保持一致 */
+  animation: burst-bloom 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .burst-ring {
-  animation: burst-ring 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: burst-ring 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 飞溅墨点：落点偏移由 --dx/--dy 在触发时注入（随机参数已冻结在 React state） */
+.burst-fleck {
+  animation: burst-fleck 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 墨涌 · 屠龙：单手提走 ≥4 子，全盘尺度的墨浪从提子群质心涌起。
+   主浪 + 回声各一圈，粗墨描边由粗渐细（strokeWidth 动画与 transform 同帧进行） */
+.dragon-wave {
+  animation: dragon-wave 1400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  fill: none;
+  stroke: #14100c;
+  stroke-width: 26;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.dragon-wave--echo {
+  animation-delay: 260ms;
+  stroke-width: 14;
 }
 
 .ko-rift-svg {
-  animation: rift-pulse 2.4s ease-in-out infinite;
+  animation: rift-pulse 16s ease-in-out infinite;
 }
 
-.last-glow {
-  animation: last-glow 2.6s ease-in-out infinite;
+/* 最后一手金圈：一次性收缩定格后静止常驻（无无限动画，
+   避免与 feTurbulence 纸纹叠加成持续重光栅化），下一手落下才移走 */
+.last-ring {
+  animation: last-ring 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 落子微弹：轻度过冲的落锤感（弹性缓动） */
+.stone-drop {
+  animation: stone-drop 150ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* 提子墨痕：低透明度渐隐，比散墨（700ms）活得更久 */
+.burst-stain {
+  animation: burst-stain 1700ms ease-out forwards;
+}
+
+@keyframes stone-drop {
+  from {
+    transform: scale(1.22);
+  }
+  60% {
+    transform: scale(0.96);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes burst-stain {
+  0% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* ---- 侧栏呼吸回合 ---- */
@@ -1331,6 +1144,9 @@ a {
     opacity: 0.5;
     transform: scale(0.3);
   }
+  60% {
+    opacity: 0.28;
+  }
   100% {
     opacity: 0;
     transform: scale(2.4);
@@ -1344,7 +1160,7 @@ a {
   }
   100% {
     opacity: 0;
-    transform: scale(1.9);
+    transform: scale(2.3);
   }
 }
 
@@ -1355,31 +1171,61 @@ a {
   }
   100% {
     opacity: 0;
-    transform: scale(2.8);
+    transform: scale(3.4);
+  }
+}
+
+@keyframes burst-fleck {
+  0% {
+    opacity: 0.8;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(0.3);
+  }
+}
+
+@keyframes dragon-wave {
+  0% {
+    opacity: 0.6;
+    stroke-width: 30;
+    transform: scale(0.08);
+  }
+  60% {
+    opacity: 0.32;
+  }
+  100% {
+    opacity: 0;
+    stroke-width: 8;
+    transform: scale(1);
   }
 }
 
 @keyframes rift-pulse {
   0%,
+  14% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+  7% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
   100% {
     opacity: 0.45;
     transform: scale(0.85);
   }
-  50% {
-    opacity: 1;
-    transform: scale(1.12);
-  }
 }
 
-@keyframes last-glow {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
+@keyframes last-ring {
+  from {
+    opacity: 0;
+    transform: scale(1.6);
   }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.18);
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -1465,34 +1311,81 @@ a {
 .beast-breathe {
   transform-box: fill-box;
   transform-origin: center;
+  animation: beast-breathe 5s ease-in-out infinite;
+}
+
+/* 一次性入场：墨云翻涌中凝形，带一点旋劲 */
+.beast-emerge {
+  animation: beast-emerge 1400ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .beast-turtle {
   animation: beast-breathe 5s ease-in-out infinite;
-  opacity: 0.24;
+  opacity: 0.55;
 }
 
-.beast-turtle ellipse,
-.beast-turtle circle {
-  fill: #0a0807;
+/* 龟甲外的淡墨晕环（渐变自带浓度，不参与 opacity 相乘） */
+.turtle-halo {
+  fill: url(#beastHalo);
 }
 
-.beast-turtle .shell-line {
-  stroke: #4a3a2e;
-  stroke-width: 0.08;
+/* 玄龟出场墨云：两缕相向缓移的墨气 */
+.turtle-cloud {
+  fill: url(#beastCloud);
 }
 
-.beast-crane {
-  animation: beast-breathe 4.6s ease-in-out infinite;
-  opacity: 0.5;
-  stroke: #1a1410;
-  stroke-width: 0.14;
+.turtle-cloud-a,
+.turtle-cloud-b {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
+.turtle-cloud-a {
+  animation: cloud-drift-a 9s ease-in-out infinite;
+}
+
+.turtle-cloud-b {
+  animation: cloud-drift-b 12s ease-in-out infinite;
+}
+
+.beast-turtle .turtle-part {
+  fill: #17110d;
+}
+
+/* 六边形甲片：金褐勾线 + 极淡墨填充，真龟甲的鳞甲感 */
+.beast-turtle .shell-plates {
+  fill: rgba(26, 20, 16, 0.5);
+  stroke: #b98d55;
+  stroke-opacity: 0.75;
+  stroke-linejoin: round;
+  stroke-width: 0.045;
+}
+
+/* 游鱼：金色锦鲤（与灵泉、最后一手辉光的庆祝金同族） */
 .beast-fish {
-  animation: beast-breathe 3.4s ease-in-out infinite;
+  animation: beast-breathe 3.2s ease-in-out infinite;
+  opacity: 0.85;
+}
+
+/* 摆尾：origin 落在头部，尾部摆幅更大；与 breathe 分层嵌套避免 transform 互相覆盖 */
+.fish-sway {
+  animation: fish-sway 2.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 18% 50%;
+}
+
+.beast-fish .fin {
   fill: #e6a747;
-  opacity: 0.6;
+  opacity: 0.72;
+}
+
+.beast-fish .gill {
+  fill: none;
+  stroke: #8a6d35;
+  stroke-linecap: round;
+  stroke-width: 0.05;
 }
 
 .beast-fish .fish-eye {
@@ -1640,7 +1533,7 @@ a {
     ),
     rgba(13, 11, 10, 0.55);
   border: 1px solid rgba(244, 239, 228, 0.14);
-  padding: 0.6rem;
+  padding: 0.75rem;
 }
 
 .dlc-preview svg {
@@ -1649,21 +1542,77 @@ a {
   width: 100%;
 }
 
-.dlc-ink-line {
-  stroke-dasharray: var(--dlc-len);
-  stroke-dashoffset: var(--dlc-len);
-  animation: dlc-draw 2.8s ease-in-out infinite;
+/* MiniGoban（落地页木纹预览）自绘动画：滚动入镜播一次后定格 */
+.mg .mg-line {
+  opacity: 0;
+  stroke-dasharray: var(--mg-len);
+  stroke-dashoffset: var(--mg-len);
 }
 
-@keyframes dlc-draw {
+.mg.is-on .mg-line {
+  animation: mg-line-draw 1s cubic-bezier(0.19, 1, 0.22, 1) 0.35s both;
+}
+
+.mg .mg-ring {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.mg.is-on .mg-ring {
+  animation: mg-ring-pop 0.7s cubic-bezier(0.19, 1, 0.22, 1) 1.2s both;
+}
+
+.mg .mg-ink {
+  opacity: 0;
+  stroke-dasharray: var(--mg-ink-len);
+  stroke-dashoffset: var(--mg-ink-len);
+}
+
+.mg.is-on .mg-ink {
+  animation: mg-ink-draw 4.2s cubic-bezier(0.19, 1, 0.22, 1) 0.55s both;
+}
+
+@keyframes mg-line-draw {
   0% {
     opacity: 0;
-    stroke-dashoffset: var(--dlc-len);
+    stroke-dashoffset: var(--mg-len);
   }
   20% {
     opacity: 1;
   }
-  58%,
+  100% {
+    opacity: 0.92;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes mg-ring-pop {
+  0% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes mg-ink-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: var(--mg-ink-len);
+  }
+  12% {
+    opacity: 0.8;
+  }
+  42% {
+    stroke-dashoffset: 0;
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.8;
+  }
   100% {
     opacity: 0;
     stroke-dashoffset: 0;
@@ -1675,13 +1624,15 @@ a {
    =================================================================== */
 
 /* ---- A. 滚动揭示 ---- */
+/* 不挂 will-change：入场是一次性 transition，Blink 对运行中的
+   opacity/transform 过渡会自动提升合成层，常驻 will-change 反而
+   白白保住 ~22 个图层 */
 .reveal {
   opacity: 0;
   transform: translateY(26px);
   transition:
     opacity 950ms cubic-bezier(0.19, 1, 0.22, 1) calc(var(--i, 0) * var(--reveal-step, 90ms)),
     transform 950ms cubic-bezier(0.19, 1, 0.22, 1) calc(var(--i, 0) * var(--reveal-step, 90ms));
-  will-change: opacity, transform;
 }
 
 .reveal.is-visible {
@@ -1705,6 +1656,7 @@ a {
   background: linear-gradient(90deg, #896b41, #d8b36e);
   display: block;
   height: 100%;
+  transform: scaleX(var(--scroll-p, 0));
   transform-origin: left center;
   transition: transform 90ms linear;
 }
@@ -1745,28 +1697,18 @@ a {
   position: absolute;
 }
 
+/* 浮尘：预模糊径向渐变（不挂 filter: blur，省一个滤镜层） */
 .hero-mote {
   animation: mote-float 16s ease-in-out infinite;
-  background: radial-gradient(circle, rgba(216, 179, 110, 0.7), transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(216, 179, 110, 0.55),
+    rgba(216, 179, 110, 0.22) 45%,
+    transparent 72%
+  );
   border-radius: 999px;
-  filter: blur(1px);
-  opacity: 0.4;
+  opacity: 0.42;
   position: absolute;
-}
-
-.px-back {
-  transform: translate(calc(var(--mx, 0) * -8px), calc(var(--my, 0) * -5px));
-  transition: transform 650ms cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.px-mid {
-  transform: translate(calc(var(--mx, 0) * 14px), calc(var(--my, 0) * 9px));
-  transition: transform 520ms cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.px-front {
-  transform: translate(calc(var(--mx, 0) * 26px), calc(var(--my, 0) * 16px));
-  transition: transform 420ms cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 /* ---- B. 标题笔锋揭示（叠加在 rise-in 之上） ---- */
@@ -1786,8 +1728,10 @@ a {
 }
 
 /* ---- F. 鼠标墨迹（克制） ---- */
+/* 动画时长由 useInkCursor 以 inline animationDuration 注入（单一来源），此处不写死 */
 .cursor-ink {
   animation: ink-drop 820ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* 径向渐变本身已够软，不再叠 blur 滤镜（每滴一个滤镜层，纯开销） */
   background: radial-gradient(
     circle,
     rgba(216, 179, 110, 0.5),
@@ -1795,13 +1739,22 @@ a {
     transparent 72%
   );
   border-radius: 999px;
-  filter: blur(0.5px);
   height: 14px;
   margin: -7px 0 0 -7px;
   pointer-events: none;
   position: absolute;
   width: 14px;
   z-index: 5;
+}
+
+/* 偶发的淡墨滴（约 1/4 概率）：与金辉滴交替，打破单调点列 */
+.cursor-ink--wash {
+  background: radial-gradient(
+    circle,
+    rgba(23, 18, 15, 0.42),
+    rgba(23, 18, 15, 0.04) 60%,
+    transparent 72%
+  );
 }
 
 /* 全落地页墨迹光标层：fixed 覆盖视口，pointer-events 不挡交互，
@@ -1814,17 +1767,22 @@ a {
   z-index: 50;
 }
 
+/* --s / --o 由 spawn 时随机注入：大小与浓淡抖动 */
 @keyframes ink-drop {
   0% {
-    opacity: 0.7;
-    transform: scale(0.3);
+    opacity: calc(0.7 * var(--o, 1));
+    transform: scale(calc(0.3 * var(--s, 1)));
   }
-  60% {
-    opacity: 0.35;
+  /* 前段保浓度、尾段长衰减：更接近墨在水中洇开再散尽的节奏 */
+  55% {
+    opacity: calc(0.42 * var(--o, 1));
+  }
+  80% {
+    opacity: calc(0.16 * var(--o, 1));
   }
   100% {
     opacity: 0;
-    transform: scale(2.3);
+    transform: scale(calc(2.3 * var(--s, 1)));
   }
 }
 
@@ -2027,15 +1985,25 @@ a {
 
 .ambient-mote {
   animation: mote-float 18s ease-in-out infinite;
-  background: radial-gradient(circle, rgba(122, 152, 171, 0.45), transparent 70%);
+  /* 预模糊渐变代替 filter: blur（省滤镜层） */
+  background: radial-gradient(
+    circle,
+    rgba(122, 152, 171, 0.34),
+    rgba(122, 152, 171, 0.14) 45%,
+    transparent 72%
+  );
   border-radius: 999px;
-  filter: blur(1px);
-  opacity: 0.32;
+  opacity: 0.36;
   position: absolute;
 }
 
 .ambient-mote.is-gold {
-  background: radial-gradient(circle, rgba(216, 179, 110, 0.5), transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(216, 179, 110, 0.4),
+    rgba(216, 179, 110, 0.16) 45%,
+    transparent 72%
+  );
 }
 
 /* 暗色段落才显形的呼吸墨晕（数据驱动：挂在 .ink-bloom-bg 上） */
@@ -2064,55 +2032,35 @@ main {
   animation-play-state: paused;
 }
 
+/* ---- 首屏之下的区段：跳过离屏渲染 ----
+   content-visibility 让浏览器完全跳过远处区段的布局/绘制，
+   contain-intrinsic-size 给出近似高度避免滚动条跳动。 */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
 /* ---- 滚动视差分层（与鼠标视差 --mx/--my 并存） ----
    --sy 由 useScrollParallax 写入；负值=尚未滚到，正值=已滚过。
    背景层向"滞后"方向偏移，制造纵深。注意：Hero 三层沿用 .px-back/-mid/-front
    （下方已改成鼠标+滚动双驱动）；以下 .scroll-* 供其它段落分层使用。 */
 .scroll-slow {
   transform: translate3d(0, calc(var(--sy, 0) * 22px), 0);
-  transition: transform 120ms linear;
   will-change: transform;
 }
 
 .scroll-mid {
   transform: translate3d(0, calc(var(--sy, 0) * -42px), 0);
-  transition: transform 120ms linear;
   will-change: transform;
 }
 
 .scroll-fast {
   transform: translate3d(0, calc(var(--sy, 0) * -72px), 0);
-  transition: transform 120ms linear;
   will-change: transform;
 }
 
-/* 鼠标 + 滚动双驱动的 Hero 分层（覆盖既有 .px-back/-mid/-front） */
-.px-back {
-  transform: translate3d(
-    calc(var(--mx, 0) * -8px),
-    calc(var(--my, 0) * -5px + var(--sy, 0) * 22px),
-    0
-  );
-  transition: transform 650ms cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.px-mid {
-  transform: translate3d(
-    calc(var(--mx, 0) * 14px),
-    calc(var(--my, 0) * 9px + var(--sy, 0) * -42px),
-    0
-  );
-  transition: transform 520ms cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.px-front {
-  transform: translate3d(
-    calc(var(--mx, 0) * 26px),
-    calc(var(--my, 0) * 16px + var(--sy, 0) * -72px),
-    0
-  );
-  transition: transform 420ms cubic-bezier(0.19, 1, 0.22, 1);
-}
+/* 鼠标 + 滚动双驱动的 Hero 分层已下线：改为 useHeroParallax 直写包裹层
+   transform（见 .hero-layer），不再使用 CSS 变量与 transition。 */
 
 /* ---- Reveal 变体：rise(默认) / wipe / bloom / draw ---- */
 .reveal {
@@ -2121,7 +2069,6 @@ main {
   transition:
     opacity 950ms cubic-bezier(0.19, 1, 0.22, 1) calc(var(--i, 0) * var(--reveal-step, 90ms)),
     transform 950ms cubic-bezier(0.19, 1, 0.22, 1) calc(var(--i, 0) * var(--reveal-step, 90ms));
-  will-change: opacity, transform;
 }
 
 .reveal.is-visible {
@@ -2131,22 +2078,31 @@ main {
 
 /* 标题笔锋揭示：clip-path 自下而上揭开（复用 title-wipe 语义） */
 .reveal-wipe {
-  clip-path: inset(0 0 100% 0);
+  /* 隐藏态不能用 clip-path 裁成零面积：Chromium 会把 clip-path 计入
+     IntersectionObserver 相交几何，ratio 恒为 0 导致永不触发。
+     改为 opacity 藏身 + is-visible 时用 keyframes 从clip 起点播放同一揭幕。 */
   opacity: 0;
   transform: translateY(14px);
   transition:
-    clip-path 1050ms cubic-bezier(0.19, 1, 0.22, 1)
-      calc(var(--i, 0) * var(--reveal-step, 90ms)),
     opacity 700ms ease calc(var(--i, 0) * var(--reveal-step, 90ms)),
     transform 950ms cubic-bezier(0.19, 1, 0.22, 1)
       calc(var(--i, 0) * var(--reveal-step, 90ms));
-  will-change: clip-path, transform;
 }
 
 .reveal-wipe.is-visible {
-  clip-path: inset(0 0 0 0);
   opacity: 1;
   transform: none;
+  animation: reveal-wipe-in 1050ms cubic-bezier(0.19, 1, 0.22, 1)
+    calc(var(--i, 0) * var(--reveal-step, 90ms)) both;
+}
+
+@keyframes reveal-wipe-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 /* 卡片：先背后墨晕扩散，再升起 */
@@ -2157,7 +2113,6 @@ main {
   transition:
     opacity 850ms cubic-bezier(0.19, 1, 0.22, 1) calc(var(--i, 0) * var(--reveal-step, 90ms)),
     transform 850ms cubic-bezier(0.19, 1, 0.22, 1) calc(var(--i, 0) * var(--reveal-step, 90ms));
-  will-change: opacity, transform;
 }
 
 .reveal-bloom.is-visible {
@@ -2257,9 +2212,10 @@ section.is-visible .ink-bloom-sweep::before {
 }
 
 /* ---- 常驻 slim 导航 ---- */
+/* 不用 backdrop-filter：固定栏逐帧重滤滚动内容是落地页滚动卡顿的来源之一，
+   半透明实底 + 细金边即可保持质感 */
 .site-nav {
   align-items: center;
-  backdrop-filter: blur(10px) saturate(1.1);
   background: rgba(15, 12, 10, 0);
   border-bottom: 1px solid rgba(216, 179, 110, 0);
   display: flex;
@@ -2299,7 +2255,7 @@ section.is-visible .ink-bloom-sweep::before {
 }
 
 .site-nav.is-visible {
-  background: rgba(15, 12, 10, 0.82);
+  background: rgba(15, 12, 10, 0.9);
   border-bottom-color: rgba(216, 179, 110, 0.22);
   opacity: 1;
   transform: none;
@@ -2368,10 +2324,22 @@ section.is-visible .ink-bloom-sweep::before {
 }
 
 /* ---- #about 头像金圈缓慢自转（只转环，不转文字） ---- */
+/* 静止态完全无金：无边框、无光晕（金色只在悬停时出现） */
 .about-ring {
+  border: 1px solid rgba(216, 179, 110, 0);
+  box-shadow: 0 0 0 rgba(216, 179, 110, 0);
   position: relative;
+  transition:
+    box-shadow 700ms ease,
+    border-color 700ms ease;
 }
 
+.about-ring:hover {
+  border-color: rgba(216, 179, 110, 0.3);
+  box-shadow: 0 0 44px rgba(216, 179, 110, 0.35);
+}
+
+/* 悬停才点亮：平时环光很淡，悬停时亮起，移开过渡熄灭 */
 .about-ring::after {
   animation: about-ring 26s linear infinite;
   background: conic-gradient(
@@ -2385,9 +2353,14 @@ section.is-visible .ink-bloom-sweep::before {
   border-radius: 999px;
   content: "";
   inset: -3px;
-  opacity: 0.8;
+  opacity: 0;
   position: absolute;
+  transition: opacity 700ms ease;
   z-index: -1;
+}
+
+.about-ring:hover::after {
+  opacity: 1;
 }
 
 @keyframes about-ring {
@@ -3083,4 +3056,1923 @@ section.is-visible .ink-bloom-sweep::before {
     right: 1rem;
     top: 4.6rem;
   }
+}
+/* ============================================================
+   Hero 方案对比 demo（#hero-demo）——甲案云海山河 / 乙案水墨动势
+   规则：只用 transform/opacity；一次性 stroke/入场；无逐帧滤镜。
+   ============================================================ */
+.hd-page {
+  background: #0b0f1a;
+}
+
+.hd-nav {
+  align-items: center;
+  background: rgba(11, 15, 26, 0.88);
+  border-bottom: 1px solid rgba(216, 179, 110, 0.2);
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 0.8rem clamp(1rem, 4vw, 3rem);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+}
+
+.hd-nav-brand {
+  color: #d8b36e;
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  margin: 0;
+}
+
+.hd-nav-actions {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.hd-nav-actions button,
+.hd-nav-actions a {
+  background: none;
+  border: none;
+  color: rgba(244, 239, 228, 0.7);
+  cursor: pointer;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  padding: 0.2rem 0;
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.hd-nav-actions button:hover,
+.hd-nav-actions a:hover {
+  color: #d8b36e;
+}
+
+.hd-stage {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.hd-layer {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.hd-layer-svg {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* ---- 甲案 ---- */
+.hd-sky {
+  background: linear-gradient(
+    180deg,
+    #0d1526 0%,
+    #1d2c46 44%,
+    #6a4a3a 78%,
+    #b97e4a 94%,
+    #e0a866 100%
+  );
+  inset: 0;
+  position: absolute;
+}
+
+/* 斜光柱：静态角向渐变层做非常慢的旋转（transform，合成器友好） */
+.hd-rays {
+  animation: hd-rays-turn 90s linear infinite;
+  background: conic-gradient(
+    from 208deg at 72% 8%,
+    transparent 0deg,
+    rgba(240, 200, 130, 0.09) 6deg,
+    transparent 13deg,
+    rgba(240, 200, 130, 0.07) 19deg,
+    transparent 27deg,
+    rgba(240, 200, 130, 0.06) 34deg,
+    transparent 42deg
+  );
+  inset: -30%;
+  position: absolute;
+}
+
+@keyframes hd-rays-turn {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(6deg);
+  }
+}
+
+/* 日轮沿缓弧运行 + 光晕呼吸；月轮对侧缓沉 */
+.hd-sun {
+  animation: hd-sun-arc 42s ease-in-out infinite alternate;
+  background: radial-gradient(
+    circle,
+    #fbe6ad 0%,
+    #e8b96a 34%,
+    rgba(232, 185, 106, 0.35) 58%,
+    transparent 72%
+  );
+  height: 22vmin;
+  right: 20%;
+  top: 14%;
+  position: absolute;
+  width: 22vmin;
+}
+
+@keyframes hd-sun-arc {
+  from {
+    transform: translate(-2.5vw, 3.5vh) scale(0.96);
+  }
+  to {
+    transform: translate(2vw, -2.5vh) scale(1.04);
+  }
+}
+
+.hd-moon {
+  animation: hd-moon-drift 60s ease-in-out infinite alternate;
+  background: radial-gradient(
+    circle,
+    rgba(226, 233, 245, 0.85) 0%,
+    rgba(226, 233, 245, 0.28) 46%,
+    transparent 68%
+  );
+  height: 9vmin;
+  left: 14%;
+  top: 18%;
+  position: absolute;
+  width: 9vmin;
+}
+
+@keyframes hd-moon-drift {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(1.6vw, -2vh);
+  }
+}
+
+/* 云海带：椭圆径向渐变层整体平移 */
+.hd-clouds {
+  display: block;
+  inset: 0;
+  position: absolute;
+}
+
+.hd-clouds span {
+  animation: hd-cloud-drift ease-in-out infinite alternate;
+  background:
+    radial-gradient(ellipse 60% 46% at 32% 58%, rgba(244, 239, 228, 0.1), transparent 70%),
+    radial-gradient(ellipse 48% 38% at 68% 44%, rgba(214, 222, 238, 0.09), transparent 72%),
+    radial-gradient(ellipse 38% 30% at 12% 70%, rgba(240, 226, 200, 0.07), transparent 70%);
+  inset: -6% -20%;
+  position: absolute;
+}
+
+.hd-clouds-high span {
+  transform: translateY(-4vh);
+}
+
+.hd-clouds-mid span {
+  opacity: 0.85;
+  transform: translateY(8vh) scale(1.12);
+}
+
+@keyframes hd-cloud-drift {
+  from {
+    translate: -4% 0;
+  }
+  to {
+    translate: 4% 0;
+  }
+}
+
+.hd-cranes-demo {
+  animation: hd-crane-sway 12s ease-in-out infinite alternate;
+}
+
+@keyframes hd-crane-sway {
+  from {
+    transform: translate3d(-14px, 8px, 0);
+  }
+  to {
+    transform: translate3d(16px, -10px, 0);
+  }
+}
+
+.hd-mist-band {
+  animation: hd-mist-slide 36s ease-in-out infinite alternate;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(244, 239, 228, 0.06) 30%,
+    rgba(244, 239, 228, 0.1) 55%,
+    transparent
+  );
+  bottom: -4%;
+  height: 34%;
+  inset-inline: -10%;
+  position: absolute;
+}
+
+@keyframes hd-mist-slide {
+  from {
+    transform: translateX(-3%);
+  }
+  to {
+    transform: translateX(3%);
+  }
+}
+
+/* ---- 甲案文案 ---- */
+.hd-caption {
+  color: #f4efe4;
+  max-width: 40rem;
+  padding: 0 1.5rem;
+  position: relative;
+  text-align: center;
+  z-index: 2;
+}
+
+.hd-kicker {
+  animation: hd-fade-up 900ms 200ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  color: #e8c07a;
+  font-size: 0.8rem;
+  letter-spacing: 0.5em;
+  margin: 0 0 1rem;
+}
+
+.hd-title {
+  animation: hd-fade-up 1000ms 320ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin: 0 0 1.2rem;
+  text-shadow: 0 4px 40px rgba(11, 15, 26, 0.6);
+}
+
+.hd-sub {
+  animation: hd-fade-up 1000ms 520ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  color: rgba(244, 239, 228, 0.66);
+  font-size: 0.95rem;
+  letter-spacing: 0.2em;
+  margin: 0 0 1.8rem;
+}
+
+.hd-replay {
+  animation: hd-fade-up 900ms 720ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  background: rgba(244, 239, 228, 0.08);
+  border: 1px solid rgba(244, 239, 228, 0.28);
+  border-radius: 999px;
+  color: #f4efe4;
+  cursor: pointer;
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  padding: 0.55rem 1.6rem;
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease;
+}
+
+.hd-replay:hover {
+  background: rgba(244, 239, 228, 0.16);
+  border-color: rgba(232, 192, 122, 0.6);
+}
+
+@keyframes hd-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- 乙案 ---- */
+.hd-b {
+  background: #f4efe4;
+}
+
+.hd-paper {
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(216, 179, 110, 0.1), transparent 70%),
+    radial-gradient(ellipse 60% 44% at 76% 74%, rgba(137, 107, 65, 0.08), transparent 72%);
+  inset: 0;
+  position: absolute;
+}
+
+/* 墨滴晕染：一次性扩散定格 */
+.hd-blot {
+  animation: hd-blot-in cubic-bezier(0.19, 1, 0.22, 1) both;
+  background: radial-gradient(
+    circle,
+    rgba(32, 25, 22, 0.16) 0%,
+    rgba(32, 25, 22, 0.07) 46%,
+    rgba(32, 25, 22, 0.02) 66%,
+    transparent 74%
+  );
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes hd-blot-in {
+  from {
+    opacity: 0;
+    scale: 0.1;
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* 浮动墨绦：整只 SVG 缓漂 */
+.hd-wisps {
+  animation: hd-wisp-drift 26s ease-in-out infinite alternate;
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes hd-wisp-drift {
+  from {
+    transform: translate3d(-14px, 6px, 0) rotate(-0.4deg);
+  }
+  to {
+    transform: translate3d(16px, -8px, 0) rotate(0.5deg);
+  }
+}
+
+/* 飞白墨点：一次性滴落 */
+.hd-flick {
+  animation: hd-flick-in 700ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  background: radial-gradient(
+    circle,
+    rgba(32, 25, 22, 0.5) 0%,
+    rgba(32, 25, 22, 0.18) 55%,
+    transparent 75%
+  );
+  border-radius: 50%;
+  height: 10px;
+  position: absolute;
+  width: 10px;
+}
+
+@keyframes hd-flick-in {
+  from {
+    opacity: 0;
+    scale: 0.2;
+    translate: 0 -26px;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+}
+
+.hd-caption-ink {
+  color: #201916;
+}
+
+.hd-kicker-ink {
+  color: #896b41;
+}
+
+/* 逐字入纸：淡入 + 轻微落笔缩放 */
+.hd-title-ink {
+  display: flex;
+  font-family: "Kaiti SC", "STKaiti", "Songti SC", serif;
+  font-size: clamp(4rem, 13vw, 10rem);
+  font-weight: 400;
+  gap: 0.06em;
+  justify-content: center;
+  line-height: 1.05;
+  margin: 0 0 1rem;
+}
+
+.hd-title-ink span {
+  animation: hd-char-in 900ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.hd-title-gap {
+  width: 0.5em;
+}
+
+@keyframes hd-char-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(1.14);
+    filter: none;
+  }
+  55% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 笔锋下划线：一次性书写 */
+.hd-brush-line {
+  animation: hd-fade-up 800ms 1.15s cubic-bezier(0.19, 1, 0.22, 1) both;
+  display: block;
+  margin: 0 auto 1.4rem;
+  max-width: 30rem;
+  width: 68%;
+}
+
+.hd-brush-line path {
+  stroke-dasharray: 560;
+  stroke-dashoffset: 560;
+  animation: hd-brush-draw 1.1s 1.3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes hd-brush-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.hd-sub-ink {
+  color: rgba(32, 25, 22, 0.6);
+}
+
+.hd-replay-ink {
+  animation-delay: 1.6s;
+  background: rgba(32, 25, 22, 0.05);
+  border-color: rgba(32, 25, 22, 0.3);
+  color: #201916;
+}
+
+.hd-replay-ink:hover {
+  background: rgba(32, 25, 22, 0.1);
+  border-color: rgba(137, 107, 65, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hd-rays,
+  .hd-sun,
+  .hd-moon,
+  .hd-clouds span,
+  .hd-cranes-demo,
+  .hd-mist-band,
+  .hd-wisps {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   天象沉浸舞台（weather 区段）——四相交叉淡入 + 相位粒子
+   ============================================================ */
+.wx-stage {
+  margin-top: 1.5rem;
+}
+
+.wx-frame {
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(32, 25, 22, 0.28);
+  height: min(72vh, 620px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ---- 天空四相（叠层 opacity 交叉淡入） ---- */
+.wx-sky {
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 1200ms ease;
+}
+
+.wx-sky.is-on {
+  opacity: 1;
+}
+
+.wx-sky-dawn {
+  background: linear-gradient(180deg, #2a3140 0%, #6b5641 56%, #c99a68 88%, #e0b17c 100%);
+}
+
+.wx-sky-noon {
+  background: linear-gradient(180deg, #38537c 0%, #7d9cb8 52%, #d6cba4 90%, #e8dcb4 100%);
+}
+
+.wx-sky-dusk {
+  background: linear-gradient(180deg, #241a2a 0%, #6e3a2c 58%, #c96a3c 88%, #e0854e 100%);
+}
+
+.wx-sky-night {
+  background: linear-gradient(180deg, #05080f 0%, #0d1524 52%, #1a2840 90%, #243654 100%);
+}
+
+/* ---- 相位光晕 ---- */
+.wx-glow {
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 1200ms ease;
+}
+
+.wx-glow.is-on {
+  opacity: 1;
+}
+
+.wx-glow-dawn {
+  background: radial-gradient(circle at 24% 72%, rgba(232, 192, 116, 0.4), transparent 46%);
+}
+
+.wx-glow-noon {
+  background: radial-gradient(circle at 50% 24%, rgba(240, 224, 170, 0.5), transparent 44%);
+}
+
+.wx-glow-dusk {
+  background: radial-gradient(circle at 76% 74%, rgba(232, 133, 74, 0.42), transparent 48%);
+}
+
+.wx-glow-night {
+  background: radial-gradient(circle at 78% 26%, rgba(143, 166, 196, 0.3), transparent 42%);
+}
+
+/* ---- 山峦（fill 由 data-phase 变量驱动，切换时过渡） ---- */
+.wx-mountains {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.wx-m0,
+.wx-m1,
+.wx-m2 {
+  transition: fill 1200ms ease;
+}
+
+.wx-stage[data-phase="dawn"] {
+  --wx-m0: #3a2f20;
+  --wx-m1: #4c3d28;
+  --wx-m2: #63502f;
+}
+
+.wx-stage[data-phase="noon"] {
+  --wx-m0: #2c3a4c;
+  --wx-m1: #3c4c60;
+  --wx-m2: #52657a;
+}
+
+.wx-stage[data-phase="dusk"] {
+  --wx-m0: #2c1c1a;
+  --wx-m1: #452620;
+  --wx-m2: #5e3226;
+}
+
+.wx-stage[data-phase="night"] {
+  --wx-m0: #0a0f1a;
+  --wx-m1: #101827;
+  --wx-m2: #172335;
+}
+
+.wx-m0 {
+  fill: var(--wx-m0);
+}
+
+.wx-m1 {
+  fill: var(--wx-m1);
+}
+
+.wx-m2 {
+  fill: var(--wx-m2);
+}
+
+/* ---- 相位粒子 ---- */
+/* 相位粒子容器：常驻叠层，交叉淡入（与 .wx-sky 同款机制） */
+.wx-fx {
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 900ms ease;
+}
+
+.wx-fx.is-on {
+  opacity: 1;
+}
+
+/* 晨：流雾 + 斜光柱 */
+.wx-mist {
+  background: linear-gradient(180deg, transparent, rgba(244, 239, 228, 0.1) 40%, rgba(244, 239, 228, 0.16) 62%, transparent);
+  bottom: 18%;
+  height: 30%;
+  inset-inline: -12%;
+  position: absolute;
+}
+
+.wx-mist-a {
+  animation: wx-mist-drift 22s ease-in-out infinite alternate;
+}
+
+.wx-mist-b {
+  animation: wx-mist-drift 30s ease-in-out infinite alternate-reverse;
+  bottom: 4%;
+  opacity: 0.7;
+}
+
+@keyframes wx-mist-drift {
+  from {
+    transform: translateX(-4%);
+  }
+  to {
+    transform: translateX(4%);
+  }
+}
+
+.wx-shaft {
+  animation: wx-shaft-breathe 9s ease-in-out infinite;
+  background: linear-gradient(
+    104deg,
+    transparent 18%,
+    rgba(240, 210, 150, 0.12) 44%,
+    rgba(240, 210, 150, 0.05) 58%,
+    transparent 76%
+  );
+  inset: 0 0 0 auto;
+  position: absolute;
+  width: 30%;
+}
+
+@keyframes wx-shaft-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 午：日轮呼吸 + 微光斑 */
+.wx-noon-sun {
+  animation: wx-halo 6s ease-in-out infinite;
+  background: radial-gradient(
+    circle,
+    #f7ecc4 0%,
+    rgba(240, 224, 170, 0.75) 26%,
+    rgba(240, 224, 170, 0.22) 52%,
+    transparent 68%
+  );
+  height: 20vmin;
+  left: 50%;
+  position: absolute;
+  top: 14%;
+  translate: -50% 0;
+  width: 20vmin;
+}
+
+@keyframes wx-halo {
+  0%,
+  100% {
+    scale: 0.96;
+  }
+  50% {
+    scale: 1.05;
+  }
+}
+
+.wx-shimmer {
+  animation: wx-shimmer-pulse 5s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(255, 250, 226, 0.75), transparent 70%);
+  border-radius: 50%;
+  height: 8px;
+  position: absolute;
+  width: 8px;
+}
+
+@keyframes wx-shimmer-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    scale: 0.8;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.25;
+  }
+}
+
+/* 暮：琥珀落叶（下落 + 摇摆） */
+.wx-dusk-sun {
+  background: radial-gradient(
+    circle,
+    #f0a468 0%,
+    rgba(224, 133, 78, 0.55) 34%,
+    rgba(224, 133, 78, 0.16) 56%,
+    transparent 70%
+  );
+  height: 16vmin;
+  position: absolute;
+  right: 10%;
+  top: 34%;
+  width: 16vmin;
+}
+
+.wx-leaf {
+  animation: wx-leaf-fall linear infinite;
+  background: radial-gradient(circle at 34% 30%, #d8905a, #a85a32 70%);
+  border-radius: 62% 38% 55% 45% / 55% 48% 52% 45%;
+  height: 10px;
+  position: absolute;
+  width: 12px;
+}
+
+@keyframes wx-leaf-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -6%, 0) rotate(0deg);
+  }
+  8% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate3d(3vw, 46%, 0) rotate(160deg);
+  }
+  92% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-1vw, 104%, 0) rotate(320deg);
+  }
+}
+
+/* 夜：繁星 + 月轮 + 萤火呼吸 */
+.wx-star-dot {
+  background: #d8e4f0;
+  border-radius: 50%;
+  height: 2px;
+  opacity: 0.55;
+  position: absolute;
+  width: 2px;
+}
+
+.wx-night-moon {
+  background: radial-gradient(
+    circle,
+    #e6ecf5 0%,
+    rgba(230, 236, 245, 0.5) 36%,
+    rgba(230, 236, 245, 0.12) 56%,
+    transparent 70%
+  );
+  height: 12vmin;
+  position: absolute;
+  right: 12%;
+  top: 16%;
+  width: 12vmin;
+}
+
+.wx-firefly {
+  animation: wx-firefly-breathe 4.6s ease-in-out infinite;
+  background: radial-gradient(
+    circle,
+    rgba(240, 232, 160, 0.95) 0%,
+    rgba(216, 196, 100, 0.4) 44%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  height: 7px;
+  position: absolute;
+  width: 7px;
+}
+
+@keyframes wx-firefly-breathe {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translate3d(0, 0, 0);
+  }
+  35% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate3d(1.2vw, -1.6vh, 0);
+  }
+}
+
+/* ---- 选择器与解说 ---- */
+.wx-selector {
+  backdrop-filter: none;
+  background: rgba(11, 15, 26, 0.4);
+  border-radius: 999px;
+  bottom: 4.5%;
+  display: flex;
+  gap: 0.4rem;
+  left: 50%;
+  padding: 0.45rem 0.6rem;
+  position: absolute;
+  translate: -50% 0;
+  z-index: 2;
+}
+
+.wx-tab {
+  align-items: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: rgba(244, 239, 228, 0.6);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.4rem 0.9rem;
+  transition:
+    background-color 260ms ease,
+    border-color 260ms ease,
+    color 260ms ease;
+}
+
+.wx-tab .weather-icon {
+  filter: none;
+  height: 3rem;
+  margin-bottom: 0;
+  width: 3rem;
+}
+
+.wx-tab .weather-icon svg {
+  height: 40px;
+  width: 40px;
+}
+
+.wx-tab-name {
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+}
+
+.wx-tab:hover {
+  color: #f4efe4;
+}
+
+.wx-tab.is-active {
+  background: rgba(244, 239, 228, 0.12);
+  border-color: rgba(216, 179, 110, 0.5);
+  color: #f4efe4;
+}
+
+@media (max-width: 640px) {
+  .wx-frame {
+    height: 78vh;
+  }
+
+  .wx-tab {
+    padding: 0.35rem 0.55rem;
+  }
+
+  .wx-tab .weather-icon {
+    height: 2.4rem;
+    width: 2.4rem;
+  }
+
+  .wx-tab .weather-icon svg {
+    height: 30px;
+    width: 30px;
+  }
+
+  .wx-tab-name {
+    font-size: 0.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wx-mist,
+  .wx-shaft,
+  .wx-noon-sun,
+  .wx-shimmer,
+  .wx-leaf,
+  .wx-firefly {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   棋盘质感 demo（#hero-demo 三选一）——甲木纹 / 乙宣纸 / 丙玄漆
+   三盘共享几何与赢线画法，只换 defs；赢线滚动入镜自绘一次。
+   ============================================================ */
+.sb-demos {
+  background:
+    radial-gradient(1100px 560px at 50% 0%, rgba(216, 179, 110, 0.07), transparent 70%),
+    #17120f;
+  color: #f4efe4;
+  margin: 0;
+  padding: 7.5rem clamp(1rem, 4vw, 3rem) 5.5rem;
+}
+
+.sb-demos-head {
+  margin: 0 auto 3.2rem;
+  max-width: 760px;
+  text-align: center;
+}
+
+.sb-kicker {
+  color: #d8b36e;
+  font-size: 0.78rem;
+  letter-spacing: 0.5em;
+  margin: 0 0 1.1rem;
+}
+
+.sb-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  margin: 0 0 0.9rem;
+}
+
+.sb-lede {
+  color: rgba(244, 239, 228, 0.6);
+  font-size: 0.98rem;
+  line-height: 1.9;
+  margin: 0;
+}
+
+.sb-list {
+  display: grid;
+  gap: 4.6rem;
+  margin: 0 auto;
+  max-width: 880px;
+}
+
+.sb-card {
+  display: grid;
+  gap: 1.3rem;
+  justify-items: center;
+}
+
+.style-board {
+  display: block;
+  height: auto;
+  width: min(100%, 620px);
+}
+
+.sb-card-cap {
+  max-width: 560px;
+  text-align: center;
+}
+
+.sb-card-name {
+  font-size: 1.22rem;
+  letter-spacing: 0.22em;
+  margin: 0 0 0.45rem;
+}
+
+.sb-card-name strong {
+  color: #d8b36e;
+  font-weight: 600;
+  margin-right: 0.5em;
+}
+
+.sb-card-desc {
+  color: rgba(244, 239, 228, 0.55);
+  font-size: 0.92rem;
+  line-height: 1.85;
+  margin: 0;
+}
+
+/* 赢线自绘（一次性，定格收尾） */
+.style-board .sb-line {
+  opacity: 0;
+  stroke-dasharray: var(--sb-len);
+  stroke-dashoffset: var(--sb-len);
+}
+
+.style-board.is-on .sb-line {
+  animation: sb-line-draw 1s cubic-bezier(0.19, 1, 0.22, 1) 0.3s both;
+}
+
+.style-board .sb-ring {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.style-board.is-on .sb-ring {
+  animation: sb-ring-pop 0.7s cubic-bezier(0.19, 1, 0.22, 1) 1.15s both;
+}
+
+@keyframes sb-line-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: var(--sb-len);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.92;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sb-ring-pop {
+  0% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .sb-demos {
+    padding-top: 5.5rem;
+  }
+}
+
+/* ============================================================
+   文钱钱包 & 墨阁商店
+   ============================================================ */
+
+/* 铜钱余额徽章（金圆方孔） */
+.balance-pill {
+  align-items: center;
+  background: rgba(13, 11, 10, 0.45);
+  border: 1px solid rgba(216, 179, 110, 0.35);
+  border-radius: 999px;
+  color: #f4efe4;
+  display: inline-flex;
+  flex: none;
+  gap: 0.4rem;
+  padding: 0.28rem 0.8rem 0.28rem 0.42rem;
+}
+
+.coin-icon {
+  background: radial-gradient(circle at 35% 30%, #f0d493, #c39a55 55%, #8a6528);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(138, 101, 40, 0.85),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+  display: inline-block;
+  height: 1.15rem;
+  position: relative;
+  width: 1.15rem;
+}
+
+.coin-icon::after {
+  background: rgba(13, 11, 10, 0.6);
+  border-radius: 1.5px;
+  content: "";
+  height: 0.42rem;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.42rem;
+}
+
+.coin-icon-lg {
+  height: 2.4rem;
+  width: 2.4rem;
+}
+
+.balance-num {
+  color: #f0d493;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.balance-unit {
+  color: rgba(244, 239, 228, 0.6);
+  font-size: 0.78rem;
+}
+
+.turn-block .balance-pill {
+  margin-left: auto;
+}
+
+/* 获得 / 购买 toast */
+.wallet-toast-layer {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 1.6rem;
+  z-index: 90;
+}
+
+.wallet-toast {
+  align-items: center;
+  animation: wallet-toast-in 320ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  background: rgba(15, 12, 10, 0.92);
+  border: 1px solid rgba(216, 179, 110, 0.4);
+  border-radius: 999px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  color: #f4efe4;
+  display: flex;
+  font-size: 0.92rem;
+  gap: 0.5rem;
+  letter-spacing: 0.06em;
+  padding: 0.55rem 1.25rem;
+}
+
+.wallet-toast.is-spend {
+  border-color: rgba(200, 57, 42, 0.6);
+}
+
+.wallet-toast .coin-icon {
+  height: 0.95rem;
+  width: 0.95rem;
+}
+
+@keyframes wallet-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 侧栏盘面切换点（复用 weather-dot 底样式） */
+.theme-dot {
+  padding: 0.25rem 0.35rem;
+}
+
+.theme-dot-face {
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+  display: block;
+  height: 1.5rem;
+  width: 2.1rem;
+}
+
+.theme-dot.is-active .theme-dot-face {
+  box-shadow:
+    0 0 0 2px rgba(216, 179, 110, 0.9),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dot.is-locked .theme-dot-face {
+  filter: saturate(0.35) brightness(0.6);
+}
+
+.theme-dot-lock {
+  font-size: 0.68rem;
+  margin-left: 0.12rem;
+}
+
+.theme-shop-btn {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+}
+
+.mode-header-right {
+  align-items: center;
+  display: flex;
+  gap: 0.9rem;
+}
+
+/* 商店页 */
+.shop-stage {
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 1.2rem clamp(1rem, 4vw, 3rem) 4rem;
+  width: 100%;
+}
+
+.shop-head {
+  align-items: flex-end;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  margin-bottom: 2.4rem;
+}
+
+.shop-kicker {
+  color: var(--gold-1);
+  font-size: 0.8rem;
+  letter-spacing: 0.5em;
+  margin: 0 0 0.7rem;
+}
+
+.shop-title {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  letter-spacing: 0.2em;
+  margin: 0 0 0.6rem;
+}
+
+.shop-sub {
+  color: rgba(244, 239, 228, 0.6);
+  margin: 0;
+}
+
+.shop-group {
+  margin-bottom: 2.6rem;
+}
+
+.shop-group-cap {
+  border-left: 3px solid rgba(216, 179, 110, 0.65);
+  color: #d8cfc0;
+  font-size: 1rem;
+  letter-spacing: 0.35em;
+  margin: 0 0 1.1rem;
+  padding-left: 0.75rem;
+}
+
+.shop-cards {
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+}
+
+.shop-card {
+  background: rgba(24, 19, 15, 0.72);
+  border: 1px solid rgba(216, 179, 110, 0.22);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1.2rem;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+
+.shop-card:hover {
+  border-color: rgba(216, 179, 110, 0.5);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+.shop-card.is-inUse {
+  border-color: rgba(216, 179, 110, 0.65);
+}
+
+.shop-swatch {
+  border-radius: 10px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  height: 72px;
+  width: 72px;
+}
+
+.shop-card-glyph {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+  height: 72px;
+}
+
+.shop-card-name {
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  margin: 0.35rem 0 0;
+}
+
+.shop-card-desc {
+  color: rgba(244, 239, 228, 0.55);
+  flex: 1;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.shop-card-foot {
+  align-items: center;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+}
+
+.shop-price {
+  color: #f0d493;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+}
+
+.shop-buy {
+  min-width: 6.4rem;
+}
+
+.shop-card.is-insufficient .shop-buy {
+  opacity: 0.6;
+}
+
+/* 购入确认弹窗（复用 result-overlay / result-card） */
+.shop-modal-card {
+  max-width: 26rem;
+  text-align: center;
+}
+
+.shop-modal-kicker {
+  color: var(--gold-2);
+  font-size: 0.78rem;
+  letter-spacing: 0.4em;
+  margin: 0 0 0.8rem;
+}
+
+.shop-modal-name {
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.5rem;
+}
+
+.shop-modal-desc {
+  color: rgba(244, 239, 228, 0.6);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  margin: 0 0 1.1rem;
+}
+
+.shop-modal-price {
+  color: #f0d493;
+  margin: 0 0 0.3rem;
+}
+
+.shop-modal-balance {
+  color: rgba(244, 239, 228, 0.55);
+  font-size: 0.88rem;
+  margin: 0 0 1.4rem;
+}
+
+.shop-modal-done {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1rem 0;
+}
+
+.shop-seal {
+  animation: seal-stamp 700ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.shop-modal-owned {
+  color: rgba(244, 239, 228, 0.65);
+  letter-spacing: 0.3em;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .shop-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* ============================================================
+   墨阁山河背景（致敬 demo 甲案 · 云海山河）
+   ============================================================ */
+.shop-backdrop {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: 0;
+}
+
+.shop-sky {
+  background: linear-gradient(
+    180deg,
+    #17120f 0%,
+    #2a2018 38%,
+    #5f4434 72%,
+    #a86f44 100%
+  );
+  inset: 0;
+  position: absolute;
+}
+
+.shop-mountains {
+  display: block;
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.shop-clouds {
+  inset: 0;
+  position: absolute;
+}
+
+.shop-clouds span {
+  animation: hd-cloud-drift ease-in-out infinite alternate;
+  background:
+    radial-gradient(ellipse 60% 46% at 32% 58%, rgba(244, 239, 228, 0.09), transparent 70%),
+    radial-gradient(ellipse 48% 38% at 68% 44%, rgba(240, 226, 200, 0.08), transparent 72%),
+    radial-gradient(ellipse 38% 30% at 12% 70%, rgba(240, 226, 200, 0.06), transparent 70%);
+  inset: -6% -20%;
+  position: absolute;
+}
+
+.shop-clouds span:nth-child(2) {
+  animation-duration: 46s;
+  transform: translateY(6vh) scale(1.1);
+}
+
+.shop-clouds span:nth-child(3) {
+  animation-duration: 58s;
+  opacity: 0.8;
+  transform: translateY(-3vh);
+}
+
+.shop-mist {
+  animation: hd-mist-slide 36s ease-in-out infinite alternate;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(244, 239, 228, 0.06) 30%,
+    rgba(244, 239, 228, 0.1) 55%,
+    transparent
+  );
+  bottom: -4%;
+  height: 34%;
+  inset-inline: -10%;
+  position: absolute;
+}
+
+/* 可读性暗化：上深下浅，保住标题与卡片的对比 */
+.shop-scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(23, 18, 15, 0.9) 0%,
+    rgba(23, 18, 15, 0.42) 34%,
+    rgba(23, 18, 15, 0.26) 62%,
+    rgba(23, 18, 15, 0.64) 100%
+  );
+  inset: 0;
+  position: absolute;
+}
+
+.shop-view {
+  position: relative;
+}
+
+.shop-view > .play-header,
+.shop-view > .shop-stage {
+  position: relative;
+  z-index: 2;
+}
+
+/* ============================================================
+   墨阁 · 每日领取条 / 玩法特效并排 / 文钱提醒弹窗
+   ============================================================ */
+
+/* 每日登录领取条 */
+.shop-daily {
+  align-items: center;
+  background: rgba(24, 19, 15, 0.6);
+  border: 1px solid rgba(216, 179, 110, 0.22);
+  border-radius: 14px;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2.4rem;
+  padding: 0.9rem 1.2rem;
+}
+
+.shop-daily.is-claimable {
+  border-color: rgba(216, 179, 110, 0.55);
+  box-shadow: 0 0 32px rgba(216, 179, 110, 0.12);
+}
+
+.shop-daily-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-daily-cap {
+  font-size: 1rem;
+  letter-spacing: 0.18em;
+  margin: 0 0 0.2rem;
+}
+
+.shop-daily-sub {
+  color: rgba(244, 239, 228, 0.55);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.shop-daily-cta {
+  flex: none;
+  min-width: 8rem;
+}
+
+/* 玩法 / 特效并排 */
+.shop-duo {
+  display: grid;
+  gap: 1.6rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 760px) {
+  .shop-duo {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 落地页 DLC CTA 的铜钱价格 */
+.cta-price {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.32rem;
+  margin-left: 0.55rem;
+}
+
+.coin-icon-sm {
+  height: 0.9rem;
+  width: 0.9rem;
+}
+
+/* 文钱提醒弹窗（仿 lang-hint）。与语言提示卡同挂在 .hint-stack
+   纵向堆叠，由容器统一锚定，互不重叠 */
+.hint-stack {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  position: absolute;
+  right: clamp(1rem, 3vw, 2rem);
+  top: 5.2rem;
+  z-index: 25;
+}
+
+.hint-stack .lang-hint,
+.hint-stack .wallet-hint {
+  position: static;
+  right: auto;
+  top: auto;
+}
+
+/* 堆叠时只有最上面的卡保留指向拉杆的箭头 */
+.hint-stack > :not(:first-child) .lang-hint-pointer {
+  display: none;
+}
+
+.wallet-hint .lang-hint-text {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.wallet-hint .lang-hint-text::before {
+  background: radial-gradient(circle at 35% 30%, #f0d493, #c39a55 55%, #8a6528);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px rgba(138, 101, 40, 0.85);
+  content: "";
+  display: inline-block;
+  flex: none;
+  height: 0.95rem;
+  width: 0.95rem;
+}
+
+/* toast 内铜钱图标 */
+.wallet-toast-coin {
+  background: radial-gradient(circle at 35% 30%, #f0d493, #c39a55 55%, #8a6528);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(138, 101, 40, 0.85),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+  display: inline-block;
+  flex: none;
+  height: 0.95rem;
+  position: relative;
+  width: 0.95rem;
+}
+
+.wallet-toast-coin::after {
+  background: rgba(13, 11, 10, 0.6);
+  border-radius: 1.5px;
+  content: "";
+  height: 0.34rem;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.34rem;
+}
+
+/* ============================================================
+   墨泉钱庄专区（logo + 终身无尽文钱卡）
+   ============================================================ */
+.shop-bank {
+  align-items: center;
+  display: grid;
+  gap: 2.2rem;
+  grid-template-columns: minmax(230px, 0.9fr) minmax(320px, 1.4fr);
+}
+
+.shop-bank-name {
+  font-size: 1.55rem;
+  letter-spacing: 0.2em;
+  margin: 1.2rem 0 0.25rem;
+}
+
+.shop-bank-en {
+  color: rgba(244, 239, 228, 0.4);
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  margin: 0 0 0.9rem;
+}
+
+.shop-bank-motto {
+  color: #f0d493;
+  font-size: 0.95rem;
+  letter-spacing: 0.28em;
+  margin: 0 0 0.9rem;
+}
+
+.shop-bank-desc {
+  color: rgba(244, 239, 228, 0.55);
+  font-size: 0.9rem;
+  line-height: 1.95;
+  margin: 0 0 1.1rem;
+}
+
+.shop-bank-exclusive {
+  border-top: 1px solid rgba(216, 179, 110, 0.28);
+  color: #d8b36e;
+  display: inline-block;
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  margin: 0;
+  padding-top: 0.9rem;
+}
+
+.shop-bank-card svg {
+  border-radius: 24px;
+  box-shadow:
+    0 34px 80px rgba(0, 0, 0, 0.6),
+    0 0 60px rgba(216, 179, 110, 0.1);
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .shop-bank {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   钱卡形制 demo（#hero-demo 三选一）——甲银票 / 乙腰牌 / 丙玉佩
+   ============================================================ */
+.bank-card-demo-svg {
+  display: block;
+}
+
+.bank-card-demo-svg svg {
+  display: block;
+  height: auto;
+  width: min(100%, 620px);
+}
+
+/* ===== 围棋规则古纸卷（rules scroll） ===== */
+/* 草书：中文行楷栈在前、拉丁手写体在后——同一行文字里中西文按字符
+   各自回退到草书字形，中英文皆手写 */
+.brush-hand {
+  font-family: "STXingkai", "Xingkai SC", "Ma Shan Zheng", "STKaiti", "KaiTi",
+    "Snell Roundhand", "Segoe Script", "Brush Script MT", "Apple Chancery", cursive;
+}
+
+/* 「阅读围棋规则」按钮：简单米色 */
+.rules-scroll-btn {
+  background: #e8dcc0;
+  border: 1px solid rgba(96, 70, 30, 0.3);
+  border-radius: 0.35rem;
+  color: #4a3a26;
+  font-size: 1.02rem;
+  letter-spacing: 0.14em;
+  padding: 0.62rem 1.5rem;
+  transition: background-color 220ms ease, border-color 220ms ease;
+}
+
+.rules-scroll-btn:hover {
+  background: #dfd0ad;
+  border-color: rgba(96, 70, 30, 0.5);
+}
+
+.rules-scroll-overlay {
+  animation: scroll-fade 320ms ease both;
+  background: rgba(10, 8, 7, 0.58);
+  display: grid;
+  inset: 0;
+  padding: 1.5rem;
+  place-items: center;
+  position: fixed;
+  z-index: 70;
+}
+
+/* 老旧发黄的宣纸：多层渐变做旧（顶部陈旧晕、四角霉斑、整体偏黄），
+   不规则圆角 + 轻微倾斜 + 深内阴影模拟毛边卷翘，无逐帧滤镜 */
+.rules-scroll-paper {
+  animation: scroll-unroll 620ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(122, 92, 42, 0.12), transparent 58%),
+    radial-gradient(70% 55% at 88% 92%, rgba(92, 66, 30, 0.2), transparent 72%),
+    radial-gradient(60% 48% at 10% 78%, rgba(92, 66, 30, 0.14), transparent 70%),
+    radial-gradient(45% 35% at 92% 14%, rgba(92, 66, 30, 0.1), transparent 70%),
+    linear-gradient(163deg, #ece0c4, #e3d3ad 44%, #d8c494 78%, #ccb381);
+  border-radius: 1.1rem 0.7rem 1.3rem 0.5rem / 0.8rem 1.2rem 0.6rem 1rem;
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.55),
+    0 6px 22px rgba(0, 0, 0, 0.35),
+    inset 0 0 72px rgba(96, 70, 30, 0.28),
+    inset 0 0 12px rgba(96, 70, 30, 0.18);
+  color: #3b2a17;
+  max-height: 84vh;
+  max-width: 44rem;
+  overflow-y: auto;
+  padding: 3.1rem 3.2rem 2.6rem;
+  position: relative;
+  transform: rotate(-0.6deg);
+  width: 100%;
+}
+
+.rules-scroll-title {
+  color: #32220f;
+  font-size: clamp(2rem, 4.4vw, 2.9rem);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  margin-bottom: 1.6rem;
+  text-align: center;
+}
+
+.rules-scroll-list {
+  counter-reset: rule-item;
+  display: flex;
+  flex-direction: column;
+  font-size: clamp(1.12rem, 2vw, 1.32rem);
+  gap: 0.95rem;
+  line-height: 1.85;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rules-scroll-list li {
+  border-bottom: 1px dashed rgba(96, 70, 30, 0.28);
+  padding-bottom: 0.9rem;
+}
+
+/* 中文条目用汉字序号「一、二、…」，英文条目用罗马数字，随 <html lang> 切换 */
+.rules-scroll-list li::before {
+  counter-increment: rule-item;
+  font-weight: 600;
+  margin-right: 0.35em;
+}
+
+:lang(zh) .rules-scroll-list li::before {
+  content: counter(rule-item, cjk-ideographic) "、";
+}
+
+:lang(en) .rules-scroll-list li::before {
+  content: counter(rule-item, upper-roman) ". ";
+}
+
+.rules-scroll-close {
+  color: #6b5334;
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  opacity: 0.85;
+  position: absolute;
+  right: 1.2rem;
+  top: 1rem;
+  transition: color 220ms ease, opacity 220ms ease;
+}
+
+.rules-scroll-close:hover {
+  color: #8a2f1e;
+  opacity: 1;
+}
+
+.rules-scroll-foot {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.rules-scroll-footText {
+  color: #6b5334;
+  font-size: 1.05rem;
+  letter-spacing: 0.22em;
+  opacity: 0.9;
+}
+
+.rules-scroll-seal {
+  font-size: 1.15rem;
+  height: 2.4rem;
+  transform: rotate(-4deg);
+  width: 2.4rem;
+}
+
+@keyframes scroll-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scroll-unroll {
+  from {
+    opacity: 0;
+    transform: translateY(26px) rotate(-1.8deg) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-0.6deg) scale(1);
+  }
+}
+
+/* ---- 体验入口（WHY 区）：墨玉描金 + 棋子印鉴 ---- */
+.cta-ink {
+  background: linear-gradient(155deg, #28211a, #17110d 72%);
+  border: 1px solid rgba(216, 179, 110, 0.55);
+  box-shadow:
+    0 12px 28px rgba(23, 18, 15, 0.38),
+    inset 0 1px 0 rgba(244, 239, 228, 0.09);
+  color: #d8b36e;
+  font-family: "STXingkai", "Xingkai SC", "Ma Shan Zheng", "STKaiti", "KaiTi",
+    "楷体", cursive;
+  font-size: 1.22rem;
+  gap: 0.75rem;
+  padding: 0.9rem 1.75rem;
+}
+
+.cta-ink:hover {
+  background: linear-gradient(155deg, #dfba76, #c9a35c 72%);
+  border-color: #d8b36e;
+  color: #17120f;
+}
+
+/* 棋子印鉴：围棋 = 黑白双石，五子棋 = 五点连珠（渐大收势） */
+.ink-stones {
+  display: inline-flex;
+  gap: 0.28rem;
+}
+
+.ink-stones i {
+  border-radius: 999px;
+  box-shadow:
+    inset -1px -2px 3px rgba(0, 0, 0, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.35);
+  height: 0.82rem;
+  width: 0.82rem;
+}
+
+.ink-stones .is-black {
+  background: radial-gradient(circle at 35% 30%, #6a5a4c, #0a0807 72%);
+}
+
+.ink-stones .is-white {
+  background: radial-gradient(circle at 35% 30%, #ffffff, #cfc2a4 78%);
+}
+
+.ink-stones--row5 {
+  align-items: center;
+}
+
+.ink-stones--row5 i {
+  background: radial-gradient(circle at 35% 30%, #e9cd8d, #b79d72 75%);
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+.ink-stones--row5 i:nth-child(2) { height: 0.58rem; width: 0.58rem; }
+.ink-stones--row5 i:nth-child(3) { height: 0.66rem; width: 0.66rem; }
+.ink-stones--row5 i:nth-child(4) { height: 0.74rem; width: 0.74rem; }
+.ink-stones--row5 i:nth-child(5) { height: 0.82rem; width: 0.82rem; }
+
+/* hover 金底时，五连点反转为墨点保持可读 */
+.cta-ink:hover .ink-stones--row5 i {
+  background: radial-gradient(circle at 35% 30%, #4a3a2c, #17110d 75%);
 }

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { BLACK, type Color, type Score } from "../../go/types";
 import { Seal } from "./Seal";
 import { useT } from "../../i18n/LanguageContext";
@@ -34,6 +35,49 @@ export function ResultOverlay({
 }: ResultOverlayProps) {
   const t = useT();
   const isTie = winner === "tie";
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // 模态对话框焦点管理：进入时聚焦首个动作、Tab 圈定在卡内、
+  // Escape 关闭（回看棋局）、卸载时把焦点还给此前的元素。
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    const prevFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusables = () =>
+      Array.from(
+        card.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute("disabled"));
+    focusables()[0]?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && onClose) {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === "Tab") {
+        const items = focusables();
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      prevFocus?.focus();
+    };
+  }, [onClose]);
+
   const winnerName = isTie
     ? t.result.draw
     : winner === BLACK
@@ -45,7 +89,7 @@ export function ResultOverlay({
       {/* 墨晕扩散揭幕 */}
       <div className="result-bloom" aria-hidden="true" />
 
-      <div className="result-card">
+      <div className="result-card" ref={cardRef}>
         {/* 印章砸落 */}
         {!isTie && (
           <div className="result-seal-wrap">

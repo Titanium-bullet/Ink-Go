@@ -29,6 +29,9 @@ export interface Score {
   whiteTerritory: number;
   blackStones: number;
   whiteStones: number;
+  /** 死子数（按颜色），仅 area 数子路径统计 */
+  deadBlack: number;
+  deadWhite: number;
   winner: Color | "tie";
   /** 认输方（仅 reason==="resign" 时非 null）。UI 显示「某方认输」时应以此为准，而非 winner。 */
   resigned: Color | null;
@@ -47,6 +50,10 @@ export interface GameState {
   consecutivePasses: number;
   history: HistoryAction[];
   resigned: Color | null;
+  /** 两次虚着后进入死子标记阶段：棋盘锁定落子，等待确认计分 */
+  marking: boolean;
+  /** 标记阶段已点死的棋子下标（整组切换）；确认计分后保留用于数子 */
+  deadStones: number[];
   finished: boolean;
   komi: number;
 }

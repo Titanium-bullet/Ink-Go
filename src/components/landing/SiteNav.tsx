@@ -6,7 +6,7 @@ import { LangToggle } from "../LangToggle";
  * 常驻 slim 导航：滚出 Hero 后淡入下滑出现，并对当前 section 做高亮（scroll-spy）。
  * 高亮判定：让一条贴近视口上 1/3 的细带与各 section 求交，相交者即当前段。
  */
-export function SiteNav({ onPlay }: { onPlay: () => void }) {
+export function SiteNav({ onPlay, onOpenShop }: { onPlay: () => void; onOpenShop: () => void }) {
   const t = useT();
   const LINKS = [
     { id: "rules", label: t.nav.rules },
@@ -73,6 +73,9 @@ export function SiteNav({ onPlay }: { onPlay: () => void }) {
       </div>
       <div className="nav-actions">
         <LangToggle />
+        <button type="button" className="nav-play nav-shop" onClick={onOpenShop}>
+          {t.nav.shop}
+        </button>
         <button type="button" className="nav-play" onClick={onPlay}>
           {t.nav.play}
         </button>

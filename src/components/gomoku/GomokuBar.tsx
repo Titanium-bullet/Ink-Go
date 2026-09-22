@@ -3,6 +3,9 @@ import { GomokuState } from "../../gomoku/types";
 import type { Phase } from "../game/Atmosphere";
 import { useT } from "../../i18n/LanguageContext";
 import { LangToggle } from "../LangToggle";
+import { StoneChip } from "../StoneChip";
+import { BalancePill } from "../shop/BalancePill";
+import { useWallet } from "../../state/wallet";
 
 export function GomokuBar({
   state,
@@ -24,6 +27,7 @@ export function GomokuBar({
   onToggleMute: () => void;
 }) {
   const t = useT();
+  const { balance } = useWallet();
   const turnLabel = state.finished
     ? t.gomoku.finished
     : state.turn === BLACK
@@ -42,6 +46,7 @@ export function GomokuBar({
           <p className="panel-cap">{t.gomoku.turn}</p>
           <p className="panel-val">{turnLabel}</p>
         </div>
+        <BalancePill balance={balance} />
       </div>
 
       <div className="panel-grid">
@@ -81,26 +86,8 @@ export function GomokuBar({
         style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
       >
         <span style={{ opacity: 0.85 }}>{t.gomoku.goalTipLead}</span>
-        <span
-          className="mini-stone"
-          style={{
-            display: "inline-block",
-            width: "0.7rem",
-            height: "0.7rem",
-            background:
-              "radial-gradient(circle at 35% 30%, #5a4a40, #050403 70%)",
-          }}
-        />
-        <span
-          className="mini-stone"
-          style={{
-            display: "inline-block",
-            width: "0.7rem",
-            height: "0.7rem",
-            background:
-              "radial-gradient(circle at 35% 30%, #ffffff, #c9bda4 72%)",
-          }}
-        />
+        <StoneChip color={BLACK} size="0.75rem" />
+        <StoneChip color={WHITE} size="0.75rem" />
         <span style={{ opacity: 0.85 }}>{t.gomoku.goalTipTail}</span>
       </p>
 

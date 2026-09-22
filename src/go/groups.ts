@@ -1,5 +1,5 @@
 import { BLACK, Color, EMPTY, GameState } from "./types";
-import { getGroup } from "./engine";
+import { getGroup } from "./board";
 
 export interface GroupInfo {
   color: Color;
@@ -55,7 +55,7 @@ export function findBeasts(state: GameState): BeastMarks {
   const fish = groups
     .filter((g) => g.inAtari)
     .sort((a, b) => b.stoneCount - a.stoneCount)
-    .slice(0, 3);
+    .slice(0, 6);
 
   return {
     turtle: blackThick[0] ?? null,

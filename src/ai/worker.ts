@@ -7,17 +7,26 @@
 // 冲突），而是用一个局部 post() 帮助函数做受控投递，消息体本身严格类型化。
 
 import { gnugoAI } from "./gnugo/gnugo";
+import type { AIDifficulty } from "./types";
 import type { GameState } from "../go/types";
 
 // ---- 主线程 -> Worker ----
 export type AIRequest =
   | { id: number; type: "ping" }
-  | { id: number; type: "genmove"; engine: "gnugo"; state: GameState };
+  | {
+      id: number;
+      type: "genmove";
+      engine: "gnugo";
+      state: GameState;
+      difficulty?: AIDifficulty;
+    }
+  | { id: number; type: "estimate"; engine: "gnugo"; state: GameState };
 
 // ---- Worker -> 主线程 ----
 export type AIResponse =
   | { id: number; type: "pong" }
   | { id: number; type: "genmove"; move: number | null }
+  | { id: number; type: "estimate"; score: number | null }
   | { id: number; type: "error"; message: string };
 
 const post = (msg: AIResponse) =>
@@ -35,8 +44,15 @@ self.onmessage = async (e: MessageEvent<AIRequest>) => {
       }
       case "genmove": {
         // engine 目前只有 "gnugo"。后续若加 mcts，在此分支按 engine 字段路由。
-        const move = await gnugoAI.genmove(req.state);
+        const move = await gnugoAI.genmove(req.state, {
+          difficulty: req.difficulty,
+        });
         post({ id, type: "genmove", move });
+        return;
+      }
+      case "estimate": {
+        const score = await gnugoAI.estimate(req.state);
+        post({ id, type: "estimate", score });
         return;
       }
       default: {

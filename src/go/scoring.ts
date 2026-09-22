@@ -1,4 +1,5 @@
 import { BLACK, Color, EMPTY, GameState, Score, WHITE } from "./types";
+import { neighbors } from "./board";
 
 function regionTouches(board: Color[], start: number, size: number): {
   region: number[];
@@ -8,17 +9,11 @@ function regionTouches(board: Color[], start: number, size: number): {
   const borders = new Set<Color>();
   const visited = new Set<number>([start]);
   const queue = [start];
-  while (queue.length) {
-    const i = queue.shift()!;
+  // 游标代替 shift()：BFS 出队 O(1)，整块 flood fill 线性。
+  for (let head = 0; head < queue.length; head++) {
+    const i = queue[head];
     region.push(i);
-    const x = i % size;
-    const y = Math.floor(i / size);
-    const adj: number[] = [];
-    if (x > 0) adj.push(i - 1);
-    if (x < size - 1) adj.push(i + 1);
-    if (y > 0) adj.push(i - size);
-    if (y < size - 1) adj.push(i + size);
-    for (const n of adj) {
+    for (const n of neighbors(i, size)) {
       if (board[n] === EMPTY) {
         if (!visited.has(n)) {
           visited.add(n);
@@ -32,25 +27,39 @@ function regionTouches(board: Color[], start: number, size: number): {
   return { region, borders };
 }
 
+// 面积数子（中国规则风格）。死子在计分前从盘面移除：既不计作存子，
+// 其占点也随所在空区划归围住它的活棋一方。
 export function scoreArea(state: GameState): Score {
   const { size, board, komi } = state;
+  const dead = new Set(state.deadStones);
+  const eff = dead.size
+    ? board.map((c, i) => (dead.has(i) ? EMPTY : c))
+    : board;
+
   let blackStones = 0;
   let whiteStones = 0;
   let blackTerritory = 0;
   let whiteTerritory = 0;
+  let deadBlack = 0;
+  let deadWhite = 0;
 
   const visited = new Set<number>();
   for (let i = 0; i < board.length; i++) {
-    if (board[i] === BLACK) blackStones++;
-    else if (board[i] === WHITE) whiteStones++;
-    else if (!visited.has(i)) {
-      const { region, borders } = regionTouches(board, i, size);
-      for (const r of region) visited.add(r);
-      if (borders.size === 1) {
-        const owner = [...borders][0];
-        if (owner === BLACK) blackTerritory += region.length;
-        else whiteTerritory += region.length;
-      }
+    if (board[i] === EMPTY) continue;
+    if (dead.has(i)) {
+      if (board[i] === BLACK) deadBlack++;
+      else deadWhite++;
+    } else if (board[i] === BLACK) blackStones++;
+    else whiteStones++;
+  }
+  for (let i = 0; i < eff.length; i++) {
+    if (eff[i] !== EMPTY || visited.has(i)) continue;
+    const { region, borders } = regionTouches(eff, i, size);
+    for (const r of region) visited.add(r);
+    if (borders.size === 1) {
+      const owner = [...borders][0];
+      if (owner === BLACK) blackTerritory += region.length;
+      else whiteTerritory += region.length;
     }
   }
 
@@ -70,6 +79,8 @@ export function scoreArea(state: GameState): Score {
     whiteTerritory,
     blackStones,
     whiteStones,
+    deadBlack,
+    deadWhite,
     winner,
     resigned: null,
     margin,

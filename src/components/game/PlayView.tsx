@@ -6,17 +6,23 @@ import { ResultOverlay } from "./ResultOverlay";
 import { Atmosphere, type Phase } from "./Atmosphere";
 import { useGoGame } from "../../hooks/useGoGame";
 import { useSound } from "../../hooks/useSound";
+import { useWallet } from "../../state/wallet";
 import { BLACK, type Color } from "../../go/types";
 import { useT, format } from "../../i18n/LanguageContext";
+import type { AIDifficulty } from "../../ai/types";
 
 export function PlayView({
   opponent,
+  difficulty = "medium",
   onBack,
   onSelectMode,
+  onOpenShop,
 }: {
   opponent: Color | null;
+  difficulty?: AIDifficulty;
   onBack: () => void;
   onSelectMode: () => void;
+  onOpenShop: () => void;
 }) {
   const {
     state,
@@ -25,17 +31,23 @@ export function PlayView({
     pass,
     doResign,
     undo,
+    toggleDead,
+    confirmScore,
     newGame,
     setSize,
     opponent: activeOpponent,
     thinking,
     aiError,
-  } = useGoGame(19, 6.5, opponent);
+    scoreHint,
+  } = useGoGame(19, 6.5, opponent, difficulty);
   const { playStone, playCapture, playPhase, muted, toggleMute, prime } =
     useSound();
+  const { owns } = useWallet();
   const t = useT();
   const [phase, setPhase] = useState<Phase>("dusk");
   const [flavor, setFlavor] = useState(true);
+  const effectsOwned = owns("ink-effects");
+  const flavorOn = flavor && effectsOwned;
   const [revealed, setRevealed] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -44,9 +56,12 @@ export function PlayView({
     if (!state.finished) setDismissed(false);
   }, [state.finished]);
 
-  // 是否轮到 AI：此时锁棋盘
+  // 是否轮到 AI：此时锁棋盘（死子标记阶段同样锁定落子）
   const aiTurn =
-    activeOpponent !== null && state.turn === activeOpponent && !state.finished;
+    activeOpponent !== null &&
+    state.turn === activeOpponent &&
+    !state.finished &&
+    !state.marking;
   const boardLocked = thinking || aiTurn;
 
   const prevMove = useRef(0);
@@ -112,7 +127,13 @@ export function PlayView({
 
       <div className="play-stage">
         <div className="play-board-col">
-          <Goban state={state} onPlay={play} flavor={flavor} locked={boardLocked} />
+          <Goban
+            state={state}
+            onPlay={play}
+            onToggleDead={toggleDead}
+            flavor={flavorOn}
+            locked={boardLocked}
+          />
         </div>
 
         <div className="play-side">
@@ -120,24 +141,30 @@ export function PlayView({
             state={state}
             phase={phase}
             muted={muted}
-            flavor={flavor}
+            flavor={flavorOn}
+            flavorLocked={!effectsOwned}
             opponent={activeOpponent}
             thinking={thinking}
+            scoreHint={scoreHint}
             onPass={pass}
             onResign={doResign}
             onUndo={() => undo()}
+            onConfirmScore={confirmScore}
             onNewGame={() => newGame()}
             onSetSize={setSize}
             onSetPhase={setPhase}
             onToggleMute={toggleMute}
             onToggleFlavor={() => setFlavor((f) => !f)}
+            onOpenShop={onOpenShop}
           />
           {aiError && (
             <p className="hint" style={{ color: "#d8553a" }}>
               {t.game.aiErrorPrefix}{aiError}
             </p>
           )}
-          {state.finished && score && <ScorePanel score={score} />}
+          {(state.finished || state.marking) && score && (
+            <ScorePanel score={score} preview={state.marking} />
+          )}
         </div>
       </div>
 

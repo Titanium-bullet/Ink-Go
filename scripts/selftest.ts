@@ -1,8 +1,9 @@
-import { createGame, playMove, isLegal, pass, undo, resign, finalScore } from "../src/go/engine";
+import { createGame, playMove, isLegal, pass, undo, resign, finalScore, toggleDead, confirmScore } from "../src/go/engine";
 import { scoreArea } from "../src/go/scoring";
 import { BLACK, WHITE, EMPTY } from "../src/go/types";
 import type { Color, GameState } from "../src/go/types";
 import { indexToSgf, sgfToIndex, historyToSgf, extractLastMove } from "../src/ai/gnugo/sgf";
+import * as gm from "../src/gomoku/engine";
 
 let failures = 0;
 function assert(cond: boolean, msg: string) {
@@ -14,8 +15,8 @@ function assert(cond: boolean, msg: string) {
   }
 }
 
-function raw(size: number, black: number[], white: number[], turn: Color): GameState {
-  const g = createGame(size, 6.5);
+function raw(size: number, black: number[], white: number[], turn: Color, komi = 6.5): GameState {
+  const g = createGame(size, komi);
   for (const i of black) g.board[i] = BLACK;
   for (const i of white) g.board[i] = WHITE;
   g.turn = turn;
@@ -81,34 +82,74 @@ console.log("\n[4] Ko rule");
   }
 }
 
-console.log("\n[5] Scoring (territory + area)");
+console.log("\n[5] Scoring (territory + area) — 精确数值");
 {
-  // 5x5: black surrounds top-left region, white surrounds bottom-right
-  const g = createGame(5, 0);
-  let st = g;
-  // black wall at row x=2 (cols), white wall etc. Simpler: place stones to make clean territories
-  // Black: (0,0),(1,0),(0,1) ; leave (0,0) area... build two enclosed empty points
-  const seq = [
-    0, 12, 1, 13, 5, 17, 6, 18, // black builds left enclosure, white right
-  ];
-  for (const m of seq) {
-    const r = playMove(st, m);
-    if (r.ok) st = r.state;
+  // 5x5 komi=0：黑 8 子环围 (2,2)，白 16 子沿边一圈。
+  // 唯一空点 (2,2) 只贴黑 -> 黑地 1；黑面积 8+1=9，白面积 16。
+  const ring = [idx(1,1,5), idx(2,1,5), idx(3,1,5), idx(1,2,5), idx(3,2,5), idx(1,3,5), idx(2,3,5), idx(3,3,5)];
+  const border: number[] = [];
+  for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++) {
+    if (x === 0 || x === 4 || y === 0 || y === 4) border.push(idx(x, y, 5));
   }
-  const score = scoreArea(st);
-  assert(score.blackArea >= 0 && score.whiteArea >= 0, "score computed without error");
+  const g = raw(5, ring, border, BLACK, 0);
+  const score = scoreArea(g);
+  assert(score.blackStones === 8 && score.whiteStones === 16, `stones 8/16 (got ${score.blackStones}/${score.whiteStones})`);
+  assert(score.blackTerritory === 1 && score.whiteTerritory === 0, `territory 1/0 (got ${score.blackTerritory}/${score.whiteTerritory})`);
+  assert(score.blackArea === 9 && score.whiteArea === 16, `area 9/16 (got ${score.blackArea}/${score.whiteArea})`);
+  assert(score.winner === WHITE && score.margin === 7, `white wins by 7 (got ${score.winner} margin ${score.margin})`);
+
+  // 全盘死子：白边圈整圈标死 -> 死子点+中心全归黑地，白面积归零
+  const g2 = raw(5, ring, border, BLACK, 0);
+  g2.deadStones = [...border];
+  const s2 = scoreArea(g2);
+  assert(s2.deadWhite === 16 && s2.deadBlack === 0, `dead 16/0 (got ${s2.deadWhite}/${s2.deadBlack})`);
+  assert(s2.blackTerritory === 17, `dead removed: black territory 17 (got ${s2.blackTerritory})`);
+  assert(s2.blackArea === 25 && s2.whiteArea === 0, `dead removed: area 25/0 (got ${s2.blackArea}/${s2.whiteArea})`);
+  assert(s2.winner === BLACK, "black wins after white border is dead");
 }
 
-console.log("\n[6] Two passes finish the game");
+console.log("\n[6] 两次虚着 -> 死子标记 -> 确认数子终局");
 {
-  const g = createGame(9, 6.5);
-  let st = g;
-  const a = pass(st);
+  // 黑三子一-group + 白一子；两次虚着进入标记阶段而非直接终局
+  let st = raw(9, [0, 1, 9], [80], BLACK);
+  const a = pass(st); assert(a.ok, "first pass ok");
   if (a.ok) st = a.state;
-  assert(!st.finished, "one pass does not finish");
-  const b = pass(st);
+  assert(!st.finished && !st.marking, "one pass: neither finished nor marking");
+  const b = pass(st); assert(b.ok, "second pass ok");
   if (b.ok) st = b.state;
-  assert(st.finished, "two consecutive passes finish");
+  assert(st.marking && !st.finished, "two consecutive passes enter marking (not finished)");
+
+  // 标记阶段锁盘：落子/虚手/合法性均拒绝
+  const mv = playMove(st, 40);
+  assert(!mv.ok && mv.reason === "marking", "playMove rejected during marking");
+  const ps = pass(st);
+  assert(!ps.ok && ps.reason === "marking", "pass rejected during marking");
+  const lg = isLegal(st, 40);
+  assert(!lg.legal && lg.reason === "marking", "isLegal returns marking=false");
+
+  // toggleDead：整组切换；空点无操作；再点恢复
+  const t1 = toggleDead(st, 0);
+  assert(
+    t1.deadStones.length === 3 && t1.deadStones.includes(0) && t1.deadStones.includes(1) && t1.deadStones.includes(9),
+    "toggleDead marks the whole black group"
+  );
+  const t1s = t1.deadStones.join(",");
+  assert(t1s === "0,1,9", `deadStones sorted (got ${t1s})`);
+  const t2 = toggleDead(t1, 9);
+  assert(t2.deadStones.length === 0, "toggleDead again revives the group");
+  const t3 = toggleDead(st, 40);
+  assert(t3 === st, "toggleDead on empty point is a no-op");
+
+  // 标记不改变棋盘；确认后终局且死子计分生效
+  const t4 = toggleDead(st, 80); // 白子标死
+  const done = confirmScore(t4);
+  assert(done.finished && !done.marking, "confirmScore finishes the game");
+  const fs = finalScore(done);
+  assert(fs.deadWhite === 1 && fs.winner === BLACK, "scored with dead white counted to black");
+
+  // 标记阶段悔棋 = 退回最后一次虚手，继续对局
+  const back = undo(st, 1);
+  assert(!back.marking && back.consecutivePasses === 1, "undo exits marking, resumes play");
 }
 
 console.log("\n[7] Turn alternation & history");
@@ -245,6 +286,91 @@ console.log("\n[13] 认输结算：winner 是对方，resigned 是认输方");
   assert(score.resigned === WHITE, "resigned === WHITE (认输方)");
   assert(score.winner === BLACK, "winner === BLACK (胜方 = 对方)");
   assert(score.resigned !== score.winner, "resigned !== winner (关键不变式)");
+}
+
+console.log("\n[14] 打劫误报：提一子但己方两气时不应设 koPoint");
+{
+  // 黑 (2,1) 三面被白围、仅剩 (3,1) 一口气。白下 (3,1) 提 1 子，
+  // 但白新子提完后有 (2,1)+(4,1) 两口气——不是打劫形状，koPoint 必须为 null。
+  const g = raw(9, [idx(2,1,9)], [idx(1,1,9), idx(2,0,9), idx(2,2,9)], WHITE);
+  const r = playMove(g, idx(3,1,9));
+  assert(r.ok && r.captured === 1, "white captures exactly one black stone");
+  if (r.ok) {
+    assert(r.state.koPoint === null, `koPoint stays null with 2 liberties (got ${r.state.koPoint})`);
+  }
+}
+
+console.log("\n[15] 五子棋引擎：连珠判定 / 占位 / 悔棋 / 满盘和棋");
+{
+  // 横向五连：黑白交替，黑在行 2 的 x=3..7 落子（白随手挡一处也保持交替）
+  let st = gm.createGame(15);
+  const blackMoves = [idx(3,2,15), idx(4,2,15), idx(5,2,15), idx(6,2,15), idx(7,2,15)];
+  const whiteMoves = [idx(3,3,15), idx(4,3,15), idx(5,3,15), idx(6,3,15), idx(7,3,15)];
+  let won = false;
+  for (let k = 0; k < 5 && !won; k++) {
+    const rb = gm.playMove(st, blackMoves[k]);
+    assert(rb.ok, `gomoku black move ${k} ok`);
+    if (rb.ok) {
+      st = rb.state;
+      if (rb.won) { won = true; break; }
+    }
+    if (k < 4) {
+      const rw = gm.playMove(st, whiteMoves[k]);
+      assert(rw.ok, `gomoku white move ${k} ok`);
+      if (rw.ok) st = rw.state;
+    }
+  }
+  assert(st.finished && st.winner === 1, "black wins with horizontal five");
+  assert(st.winLine !== null && st.winLine.length === 5, `winLine has 5 stones (got ${st.winLine?.length})`);
+
+  // 占位非法
+  const occ = gm.playMove(st, blackMoves[0]);
+  assert(!occ.ok && occ.reason === "finished", "finished board rejects further moves");
+
+  // 悔棋退回到第 9 手（第五枚黑子落下前）
+  let st2 = gm.createGame(15);
+  for (let k = 0; k < 4; k++) {
+    st2 = gm.playMove(st2, blackMoves[k]).state;
+    st2 = gm.playMove(st2, whiteMoves[k]).state;
+  }
+  const back = gm.undo(st2, 1);
+  assert(back.moveNumber === 7 && back.turn === 2, `gomoku undo restores moveNumber/turn (got ${back.moveNumber}/${back.turn})`);
+
+  // 斜向四连不成五：白棋在角落斜四 + 黑先手拦截点外落子后游戏继续
+  let st3 = gm.createGame(9);
+  const seq3 = [
+    idx(0,0,9), idx(8,0,9),
+    idx(1,1,9), idx(7,1,9),
+    idx(2,2,9), idx(6,2,9),
+    idx(3,3,9), idx(5,3,9),
+  ];
+  for (const m of seq3) st3 = gm.playMove(st3, m).state;
+  assert(!st3.finished, "diagonal four is not a win yet");
+  const win = gm.playMove(st3, idx(4,4,9));
+  assert(win.ok && win.won && win.state.winLine !== null, "fifth diagonal stone wins");
+
+  // 5x5 满盘无五连 -> 和棋。棋盘格的主对角线恰好同色，需交换 (2,2)/(3,2)
+  // 破坏两条长对角线后再按黑白交替的顺序填满。
+  let st4 = gm.createGame(5);
+  const cellsB: number[] = [];
+  const cellsW: number[] = [];
+  for (let y = 0; y < 5; y++) {
+    for (let x = 0; x < 5; x++) {
+      let isB = (x + y) % 2 === 0;
+      if (x === 2 && y === 2) isB = false;
+      if (x === 3 && y === 2) isB = true;
+      (isB ? cellsB : cellsW).push(idx(x, y, 5));
+    }
+  }
+  const order: number[] = [];
+  for (let k = 0; k < 25; k++) order.push(k % 2 === 0 ? cellsB[k / 2] : cellsW[(k - 1) / 2]);
+  for (const m of order) {
+    const r = gm.playMove(st4, m);
+    if (!r.ok) break;
+    st4 = r.state;
+    if (st4.finished) break;
+  }
+  assert(st4.finished && st4.winner === "tie", `full board without five-in-a-row is a tie (winner=${st4.winner})`);
 }
 
 if (failures === 0) {

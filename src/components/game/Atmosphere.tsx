@@ -1,12 +1,21 @@
+import { useEffect, useRef } from "react";
 import type { Phase } from "../../go/types";
 
 export type { Phase };
 
-const MOUNTAIN_FILL: Record<Phase, [string, string, string]> = {
-  dawn: ["#1a1410", "#2a1d14", "#3a2a1c"],
-  noon: ["#161310", "#241d12", "#332a16"],
-  dusk: ["#1c0f0a", "#3a1a10", "#5a2c16"],
-  night: ["#070a10", "#0e1620", "#16222e"],
+// 四层山色（远→近）：远岚受天光偏亮，近山渐入剪影；另有河谷河光随相位换色。
+const MOUNTAIN_FILL: Record<Phase, [string, string, string, string]> = {
+  dawn: ["#4a3c2c", "#372a1c", "#241a12", "#120d07"],
+  noon: ["#48452f", "#343321", "#242315", "#13120a"],
+  dusk: ["#54281a", "#412014", "#2c140c", "#150905"],
+  night: ["#18212f", "#111a26", "#0b121d", "#060a10"],
+};
+
+const RIVER_TINT: Record<Phase, string> = {
+  dawn: "#e6c684",
+  noon: "#d8d0a8",
+  dusk: "#e8915a",
+  night: "#8fa6c4",
 };
 
 const MOTES = [
@@ -19,30 +28,49 @@ const MOTES = [
 ];
 
 export function Atmosphere({ phase }: { phase: Phase }) {
-  const [f0, f1, f2] = MOUNTAIN_FILL[phase];
+  const [f0, f1, f2, f3] = MOUNTAIN_FILL[phase];
+  const river = RIVER_TINT[phase];
+  const ref = useRef<HTMLDivElement>(null);
+
+  // 对局视图整屏常驻，离屏检测不适用；改为标签页隐藏时暂停全部动画
+  // （复用 .is-offscreen 的 animation-play-state 规则，省电）。
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onVis = () => el.classList.toggle("is-offscreen", document.hidden);
+    document.addEventListener("visibilitychange", onVis);
+    onVis();
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
   return (
-    <div className="atmosphere" aria-hidden="true">
+    <div ref={ref} className="atmosphere" aria-hidden="true">
       <div className="mist-layer" />
 
-      <svg className="mountain-svg" viewBox="0 0 1600 600" preserveAspectRatio="xMidYMax slice">
-        <path
-          className="mountain-drift-slow"
-          d="M-100 470 C160 360 275 420 430 320 C590 220 720 420 875 300 C1030 180 1160 400 1305 290 C1445 200 1540 330 1710 250 L1710 620 L-100 620 Z"
-          fill={f0}
-          opacity="0.9"
-        />
-        <path
-          className="mountain-drift"
-          d="M-80 540 C120 420 210 470 330 350 C460 220 610 400 760 250 C900 120 1000 340 1135 250 C1285 150 1395 320 1710 200 L1710 620 L-80 620 Z"
-          fill={f1}
-          opacity="0.85"
-        />
-        <path
-          d="M-60 580 C210 530 340 560 560 500 C780 440 970 530 1180 450 C1375 380 1490 430 1690 380 L1690 620 L-60 620 Z"
-          fill={f2}
-          opacity="0.55"
-        />
+      {/* 层峦：静态四层（山不动，动势交给雾带与河光——SVG 子节点动画
+          会整块重光栅化，此为前车之鉴） */}
+      <svg className="mountain-svg" viewBox="0 0 1600 620" preserveAspectRatio="xMidYMax slice">
+        <path d="M-100 328 C170 252 300 292 480 218 C660 144 790 268 970 196 C1130 132 1260 240 1410 180 C1530 133 1630 208 1710 168 L1710 660 L-100 660 Z" fill={f0} opacity="0.55" />
+        <path d="M-100 402 C180 322 330 362 520 284 C710 206 850 330 1030 254 C1190 188 1320 292 1470 232 C1580 188 1660 256 1710 224 L1710 660 L-100 660 Z" fill={f1} opacity="0.72" />
+        <path d="M-80 476 C200 398 350 436 560 356 C770 276 920 400 1120 320 C1290 252 1430 356 1710 286 L1710 660 L-80 660 Z" fill={f2} opacity="0.86" />
+        <path d="M-100 546 C240 470 420 506 660 428 C900 350 1060 472 1300 392 C1480 332 1600 412 1710 362 L1710 660 L-100 660 Z" fill={f3} />
       </svg>
+
+      {/* 河光：独立 SVG 层整体呼吸（山谷微光明灭） */}
+      <svg className="atmo-river" viewBox="0 0 1600 620" preserveAspectRatio="xMidYMax slice">
+        <defs>
+          <linearGradient id="atmoRiverGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={river} stopOpacity="0.04" />
+            <stop offset="100%" stopColor={river} stopOpacity="0.34" />
+          </linearGradient>
+        </defs>
+        <path d="M690 380 C760 448 706 516 806 566 C886 606 920 626 946 660 L1064 660 C994 608 936 570 894 528 C848 482 788 424 758 372 Z" fill="url(#atmoRiverGrad)" />
+        <path d="M748 424 C790 488 760 534 826 574 C872 602 896 620 918 640" fill="none" stroke={river} strokeWidth="4" strokeLinecap="round" opacity="0.26" />
+      </svg>
+
+      {/* 山脚雾带（HTML 层漂移） */}
+      <div className="atmo-fog atmo-fog-a" />
+      <div className="atmo-fog atmo-fog-b" />
 
       {MOTES.map((m, i) => (
         <span
