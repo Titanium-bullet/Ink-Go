@@ -1,3 +1,17 @@
+墨境 · 山河弈 / Ink Realm · Mountain & River Go
+Copyright (C) 2026 Titanium bullet <titanium_bullet@icloud.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It embeds a WebAssembly build of GNU Go (https://www.gnu.org/software/gnugo/),
+also licensed under the GNU GPL v3 — hence the project as a whole is
+distributed under the GNU GPL v3. The full license text follows.
+
+===================================================================
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

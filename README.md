@@ -89,7 +89,7 @@ npm run build
 
 ### License
 
-[GPL-3.0](LICENSE)(因链接 GNU Go,整体采用 GPL)
+© 2026 Titanium bullet · [GPL-3.0](LICENSE)(因链接 GNU Go,整体采用 GPL)
 
 ---
 
@@ -173,4 +173,4 @@ Thanks to singlefile bundling, you host a single `index.html`.
 
 ### License
 
-[GPL-3.0](LICENSE) (inherited from GNU Go linkage)
+© 2026 Titanium bullet · [GPL-3.0](LICENSE) (inherited from GNU Go linkage)
