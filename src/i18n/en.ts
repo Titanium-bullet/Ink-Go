@@ -74,6 +74,15 @@ export const en: Dict = {
     desc: "Every ink flourish is a visualization of the rules, never altering who wins. Pick a scenario and place a stone on the board to trigger it.",
     catalog: "Effects Index",
     reset: "Reset Board",
+    faviconCap: "Site Icon",
+    faviconHint: "Click to try a different icon on the browser tab (current default: Pair).",
+    faviconNames: {
+      pair: "Pair",
+      tengen: "Tengen",
+      seal: "Seal",
+      scape: "Landscape",
+      drop: "Ink Drop",
+    },
     scenarios: [
       {
         name: "Spirit Spring · Star Points",

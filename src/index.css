@@ -4976,3 +4976,51 @@ section.is-visible .ink-bloom-sweep::before {
 .cta-ink:hover .ink-stones--row5 i {
   background: radial-gradient(circle at 35% 30%, #4a3a2c, #17110d 75%);
 }
+
+/* ---- 站点图标选择器（试炼场面板） ---- */
+.favicon-picker {
+  border-top: 1px solid rgba(32, 25, 22, 0.15);
+  padding-top: 1rem;
+}
+
+.favicon-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.5rem;
+}
+
+.favicon-opt {
+  align-items: center;
+  border: 1px solid rgba(32, 25, 22, 0.22);
+  border-radius: 0.5rem;
+  color: #4a3a26;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  gap: 0.3rem;
+  padding: 0.5rem 0.6rem;
+  transition: border-color 220ms ease, background-color 220ms ease;
+}
+
+.favicon-opt:hover {
+  background: rgba(137, 107, 65, 0.08);
+  border-color: #896b41;
+}
+
+.favicon-opt.is-active {
+  background: rgba(216, 179, 110, 0.16);
+  border-color: #b98d55;
+}
+
+.favicon-opt img {
+  border-radius: 0.35rem;
+  display: block;
+}
+
+.favicon-hint {
+  color: #695d51;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+}

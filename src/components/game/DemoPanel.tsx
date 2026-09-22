@@ -5,6 +5,7 @@ import { useSound } from "../../hooks/useSound";
 import { createGame, playMove, resign, finalScore } from "../../go/engine";
 import { BLACK, WHITE, GameState } from "../../go/types";
 import { useT } from "../../i18n/LanguageContext";
+import { FaviconPicker } from "../demo/FaviconPicker";
 
 type Key = "spring" | "turtle" | "fish" | "ko" | "seal" | "dragon";
 
@@ -99,6 +100,8 @@ export function DemoPanel() {
           <p className="panel-cap">{current.name}</p>
           <p className="desc-body">{current.desc}</p>
         </div>
+
+        <FaviconPicker />
 
         {score && <ScorePanel score={score} />}
 

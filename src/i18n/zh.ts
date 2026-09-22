@@ -72,6 +72,15 @@ export const zh = {
     desc: "所有水墨彩蛋都是规则的可视化，不改变胜负。挑选一种效果，直接在棋盘上落子触发。",
     catalog: "彩蛋目录",
     reset: "重置此局",
+    faviconCap: "站点图标",
+    faviconHint: "点击可在浏览器标签上试用不同图标（当前默认为「双弈」）。",
+    faviconNames: {
+      pair: "双弈",
+      tengen: "天元",
+      seal: "朱印",
+      scape: "山河",
+      drop: "墨滴",
+    },
     scenarios: [
       {
         name: "灵泉 · 星位",
