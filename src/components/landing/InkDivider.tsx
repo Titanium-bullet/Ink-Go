@@ -11,7 +11,7 @@ export function InkDivider({ className = "" }: { className?: string }) {
       className={`ink-divider${visible ? " is-drawn" : ""} ${className}`}
       aria-hidden="true"
     >
-      <span className="ink-divider-ripple" />
+      {/* 涟漪金圈已移除：绘线本身即是收尾 */}
       <svg viewBox="0 0 1200 24" preserveAspectRatio="none">
         <path
           className={visible ? "is-drawn" : ""}

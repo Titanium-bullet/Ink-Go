@@ -181,18 +181,23 @@ export const BoardGrid = memo(function BoardGrid({
   );
 });
 
-function goStarPoints(size: number): number[] {
-  if (size === 19) return [3, 9, 15];
-  if (size === 13) return [3, 6, 9];
-  if (size === 9) return [2, 4, 6];
+/** 星位坐标（含天元），按路数取围棋惯例：
+    19 路九星；13 路/9 路五星（四角 + 天元）；其余路数仅天元 */
+function goStarCoords(size: number): [number, number][] {
+  if (size === 19) {
+    return [3, 9, 15].flatMap((x) => [3, 9, 15].map((y) => [x, y] as [number, number]));
+  }
+  if (size === 13) return [[3, 3], [3, 9], [9, 3], [9, 9], [6, 6]];
+  if (size === 9) return [[2, 2], [2, 6], [6, 2], [6, 6], [4, 4]];
   const c = Math.floor(size / 2);
-  return [c];
+  return [[c, c]];
 }
 
-function gomokuStarPoints(size: number): number[] {
-  if (size === 15) return [3, 7, 11];
+/** 五子棋 15 路惯例五星（四角 + 天元），其余仅天元 */
+function gomokuStarCoords(size: number): [number, number][] {
+  if (size === 15) return [[3, 3], [3, 11], [11, 3], [11, 11], [7, 7]];
   const c = Math.floor(size / 2);
-  return [c];
+  return [[c, c]];
 }
 
 /** 星位。kind: "go" 开墨兽时化作灵泉（SMIL 弹簧），否则/plain 均为墨点 */
@@ -212,24 +217,22 @@ export const BoardStars = memo(function BoardStars({
 }) {
   const { cell, px } = boardGeom(size);
   const mat = MATERIALS[theme];
-  const stars = kind === "go" ? goStarPoints(size) : gomokuStarPoints(size);
+  const stars = kind === "go" ? goStarCoords(size) : gomokuStarCoords(size);
   const spring = kind === "go" && flavor;
   return (
     <g>
-      {stars.flatMap((sx) =>
-        stars.map((sy) =>
-          spring ? (
-            <g key={`s${sx}-${sy}`}>
-              <circle cx={px(sx)} cy={px(sy)} r={cell * 0.21} fill={`url(#${p}springGlow)`} />
-              <circle cx={px(sx)} cy={px(sy)} r={cell * 0.085} fill={`url(#${p}springCore)`} />
-              <SpringRipples cx={px(sx)} cy={px(sy)} cell={cell} />
-            </g>
-          ) : (
-            <g key={`s${sx}-${sy}`}>
-              <circle cx={px(sx)} cy={px(sy)} r={cell * 0.16} fill={mat.star.halo} opacity="0.28" />
-              <circle cx={px(sx)} cy={px(sy)} r={cell * 0.09} fill={mat.star.core} />
-            </g>
-          )
+      {stars.map(([sx, sy]) =>
+        spring ? (
+          <g key={`s${sx}-${sy}`}>
+            <circle cx={px(sx)} cy={px(sy)} r={cell * 0.21} fill={`url(#${p}springGlow)`} />
+            <circle cx={px(sx)} cy={px(sy)} r={cell * 0.085} fill={`url(#${p}springCore)`} />
+            <SpringRipples cx={px(sx)} cy={px(sy)} cell={cell} />
+          </g>
+        ) : (
+          <g key={`s${sx}-${sy}`}>
+            <circle cx={px(sx)} cy={px(sy)} r={cell * 0.16} fill={mat.star.halo} opacity="0.28" />
+            <circle cx={px(sx)} cy={px(sy)} r={cell * 0.09} fill={mat.star.core} />
+          </g>
         )
       )}
     </g>

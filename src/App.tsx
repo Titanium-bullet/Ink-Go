@@ -8,7 +8,6 @@ import { PurchaseModal } from "./components/shop/PurchaseModal";
 import { WalletHint } from "./components/shop/WalletHint";
 import { Reveal } from "./components/landing/Reveal";
 import { InkDivider } from "./components/landing/InkDivider";
-import { AmbientLayer } from "./components/landing/AmbientLayer";
 import { SiteNav } from "./components/landing/SiteNav";
 import { WeatherStage } from "./components/landing/WeatherStage";
 import { Hero } from "./components/landing/Hero";
@@ -130,7 +129,6 @@ function Landing({
   const dlcPauseRef = usePauseOffscreen<HTMLDivElement>();
   return (
     <main className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#201916]">
-      <AmbientLayer />
       <div ref={inkRef} className="ink-cursor-layer" aria-hidden="true" />
       <SiteNav onPlay={onPlay} onOpenShop={onOpenShop} />
       {/* 两张提示卡共用一个锚点纵向堆叠，互不重叠 */}
@@ -191,7 +189,6 @@ function Landing({
           effectsVisible ? " is-visible" : ""
         }`}
       >
-        <div className="ink-bloom-sweep" aria-hidden="true" />
         <div className="absolute inset-0 beast-wash opacity-40" />
         <div ref={effectsPauseRef} className="relative mx-auto max-w-7xl">
           <Reveal variant="wipe" className="mb-14 max-w-3xl space-y-5">
@@ -233,7 +230,6 @@ function Landing({
           dlcVisible ? " is-visible" : ""
         }`}
       >
-        <div className="ink-bloom-sweep" aria-hidden="true" style={{ ["--bx" as string]: "70%" }} />
         <div className="absolute inset-0 beast-wash opacity-40" />
         <div ref={dlcPauseRef} className="relative mx-auto max-w-7xl">
           <Reveal variant="wipe" className="mb-14 max-w-3xl space-y-5">

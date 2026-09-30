@@ -25,12 +25,14 @@ function mgGeom(lines: number) {
   };
 }
 
-function mgStars(lines: number): number[] {
-  if (lines === 15) return [3, 7, 11];
-  if (lines === 13) return [3, 6, 9];
-  if (lines === 11) return [2, 5, 8];
-  if (lines === 9) return [2, 4, 6];
-  return [Math.floor(lines / 2)];
+/** 各路数星位（含天元），按围棋/连珠惯例：15/13/11/9 路五星，其余仅天元 */
+function mgStars(lines: number): [number, number][] {
+  if (lines === 15) return [[3, 3], [3, 11], [11, 3], [11, 11], [7, 7]];
+  if (lines === 13) return [[3, 3], [3, 9], [9, 3], [9, 9], [6, 6]];
+  if (lines === 11) return [[2, 2], [2, 8], [8, 2], [8, 8], [5, 5]];
+  if (lines === 9) return [[2, 2], [2, 6], [6, 2], [6, 6], [4, 4]];
+  const c = Math.floor(lines / 2);
+  return [[c, c]];
 }
 
 export interface MiniGobanProps {
@@ -230,14 +232,12 @@ export const MiniGobanInner = memo(function MiniGobanInner({
       />
 
       {/* 星位 */}
-      {stars.flatMap((sx) =>
-        stars.map((sy) => (
-          <g key={`s${sx}-${sy}`}>
-            <circle cx={px(sx)} cy={py(sy)} r={cell * 0.18} fill={mat.star.halo} opacity="0.2" />
-            <circle cx={px(sx)} cy={py(sy)} r={cell * 0.1} fill={mat.star.core} />
-          </g>
-        )),
-      )}
+      {stars.map(([sx, sy]) => (
+        <g key={`s${sx}-${sy}`}>
+          <circle cx={px(sx)} cy={py(sy)} r={cell * 0.18} fill={mat.star.halo} opacity="0.2" />
+          <circle cx={px(sx)} cy={py(sy)} r={cell * 0.1} fill={mat.star.core} />
+        </g>
+      ))}
 
       {/* 赢线柔底光（棋子之下），随赢线方向旋转 */}
       {win && (

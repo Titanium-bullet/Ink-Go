@@ -72,20 +72,11 @@ export const zh = {
     desc: "所有水墨彩蛋都是规则的可视化，不改变胜负。挑选一种效果，直接在棋盘上落子触发。",
     catalog: "彩蛋目录",
     reset: "重置此局",
-    faviconCap: "站点图标",
-    faviconHint: "点击可在浏览器标签上试用不同图标（当前默认为「双弈」）。",
-    faviconNames: {
-      pair: "双弈",
-      tengen: "天元",
-      seal: "朱印",
-      scape: "山河",
-      drop: "墨滴",
-    },
     scenarios: [
       {
         name: "灵泉 · 星位",
         tag: "山河",
-        desc: "开启墨兽时，棋盘九处星位化作灵泉——金辉自泉心向外漾开，像山河水脉在棋盘下涌动。",
+        desc: "开启墨兽时，棋盘星位化作灵泉——金辉自泉心向外漾开，像山河水脉在棋盘下涌动。",
       },
       {
         name: "玄龟 · 厚势",
@@ -100,7 +91,7 @@ export const zh = {
       {
         name: "龙脉裂隙",
         tag: "劫争",
-        desc: "黑下 (2,1) 提走白子即成劫，劫点浮现金红裂隙；按打劫规则，对方不可立刻回提（点该处无效，正是劫争）。",
+        desc: "黑下 C8 提走白子即成劫，劫点浮现金红裂隙；按打劫规则，对方不可立刻回提（点该处无效，正是劫争）。",
       },
       {
         name: "印章结算",
@@ -110,7 +101,7 @@ export const zh = {
       {
         name: "墨涌 · 屠龙",
         tag: "大提子",
-        desc: "一手提走四子以上（屠龙）时，全盘墨浪自提子处涌起翻卷——大转换的水墨注脚。黑下 (4,1) 提走五子白龙试试。",
+        desc: "一手提走四子以上（屠龙）时，全盘墨浪自提子处涌起翻卷——大转换的水墨注脚。黑下 E8 提走五子白龙试试。",
       },
     ],
   },
@@ -189,8 +180,6 @@ export const zh = {
     dailyHintMessage: "今日的文钱待领取",
     dailyHintCta: "去领取",
     dailyHintDismiss: "今日不再提醒",
-    boardSkin: "盘面",
-    lockedHint: "未解锁 · {price} 文",
     effectsLocked: "需「墨兽·灵泉特效包」",
     priceTag: "{price} 文",
     stampText: "购",
@@ -222,10 +211,10 @@ export const zh = {
 
   about: {
     kicker: "ABOUT THE DEVELOPER",
-    author: "墨境 山河弈作者：",
+    author: "墨境 山河弈的作者",
     name: "Titanium bullet",
-    email1Cap: "帮助 · 感兴趣 · 支持",
-    email2Cap: "商业合作 · 问题",
+    email1Cap: "帮助 · 支持",
+    email2Cap: "商业 · 问题",
     foot: "墨境 · 山河弈",
   },
 

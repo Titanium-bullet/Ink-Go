@@ -1901,22 +1901,8 @@ a {
   transition: transform 420ms cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.ink-card::after {
-  background: radial-gradient(circle at 50% 0%, rgba(183, 157, 114, 0.16), transparent 62%);
-  content: "";
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  transition: opacity 420ms ease;
-}
-
 .ink-card:hover {
   transform: translateY(-3px);
-}
-
-.ink-card:hover::after {
-  opacity: 1;
 }
 
 .ink-num {
@@ -1965,57 +1951,6 @@ a {
    - reduced-motion 由文件顶部全局规则兜底
    =================================================================== */
 
-/* ---- 全页常驻雾气 + 浮尘（fixed，pointer-events:none） ---- */
-.ambient-layer {
-  inset: 0;
-  pointer-events: none;
-  position: fixed;
-  z-index: 0;
-}
-
-.ambient-mist {
-  animation: fog-drift 30s ease-in-out infinite alternate;
-  background:
-    radial-gradient(circle at 18% 28%, rgba(122, 152, 171, 0.07), transparent 30%),
-    radial-gradient(circle at 82% 18%, rgba(216, 179, 110, 0.06), transparent 32%),
-    radial-gradient(circle at 50% 92%, rgba(122, 152, 171, 0.06), transparent 34%);
-  inset: -12%;
-  position: absolute;
-}
-
-.ambient-mote {
-  animation: mote-float 18s ease-in-out infinite;
-  /* 预模糊渐变代替 filter: blur（省滤镜层） */
-  background: radial-gradient(
-    circle,
-    rgba(122, 152, 171, 0.34),
-    rgba(122, 152, 171, 0.14) 45%,
-    transparent 72%
-  );
-  border-radius: 999px;
-  opacity: 0.36;
-  position: absolute;
-}
-
-.ambient-mote.is-gold {
-  background: radial-gradient(
-    circle,
-    rgba(216, 179, 110, 0.4),
-    rgba(216, 179, 110, 0.16) 45%,
-    transparent 72%
-  );
-}
-
-/* 暗色段落才显形的呼吸墨晕（数据驱动：挂在 .ink-bloom-bg 上） */
-.ambient-bloom {
-  animation: beast-breathe 9s ease-in-out infinite;
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(216, 179, 110, 0.1),
-    transparent 62%
-  );
-  position: absolute;
-}
 
 /* 让主内容压在氛围层之上 */
 main {
@@ -2149,29 +2084,6 @@ main {
 }
 
 /* ---- 暗色段落进视口的转场墨晕（一次性 sweep） ---- */
-.ink-bloom-sweep {
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  z-index: 0;
-}
-
-.ink-bloom-sweep::before {
-  background: radial-gradient(circle at var(--bx, 30%) var(--by, 40%),
-      rgba(216, 179, 110, 0.18),
-      transparent 55%);
-  content: "";
-  inset: 0;
-  opacity: 0;
-  position: absolute;
-  transform: scale(0.7);
-}
-
-section.is-visible .ink-bloom-sweep::before {
-  animation: bloom-sweep 1400ms cubic-bezier(0.19, 1, 0.22, 1) forwards;
-}
-
 @keyframes bloom-sweep {
   0% {
     opacity: 0;
@@ -2186,29 +2098,18 @@ section.is-visible .ink-bloom-sweep::before {
   }
 }
 
-/* ---- InkDivider 绘完后的涟漪 ---- */
-.ink-divider.is-drawn .ink-divider-ripple {
-  animation: divider-ripple 1200ms cubic-bezier(0.19, 1, 0.22, 1) 420ms forwards;
-  border: 1px solid rgba(183, 157, 114, 0.4);
-  border-radius: 999px;
-  height: 8px;
-  left: 50%;
+.ink-card::after {
+  background: radial-gradient(circle at 50% 0%, rgba(183, 157, 114, 0.16), transparent 62%);
+  content: "";
+  inset: 0;
   opacity: 0;
+  pointer-events: none;
   position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  width: 8px;
+  transition: opacity 420ms ease;
 }
 
-@keyframes divider-ripple {
-  0% {
-    opacity: 0.5;
-    transform: translate(-50%, -50%) scale(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(40);
-  }
+.ink-card:hover::after {
+  opacity: 1;
 }
 
 /* ---- 常驻 slim 导航 ---- */
@@ -2325,48 +2226,6 @@ section.is-visible .ink-bloom-sweep::before {
 
 /* ---- #about 头像金圈缓慢自转（只转环，不转文字） ---- */
 /* 静止态完全无金：无边框、无光晕（金色只在悬停时出现） */
-.about-ring {
-  border: 1px solid rgba(216, 179, 110, 0);
-  box-shadow: 0 0 0 rgba(216, 179, 110, 0);
-  position: relative;
-  transition:
-    box-shadow 700ms ease,
-    border-color 700ms ease;
-}
-
-.about-ring:hover {
-  border-color: rgba(216, 179, 110, 0.3);
-  box-shadow: 0 0 44px rgba(216, 179, 110, 0.35);
-}
-
-/* 悬停才点亮：平时环光很淡，悬停时亮起，移开过渡熄灭 */
-.about-ring::after {
-  animation: about-ring 26s linear infinite;
-  background: conic-gradient(
-    from 0deg,
-    rgba(216, 179, 110, 0) 0deg,
-    rgba(216, 179, 110, 0.55) 90deg,
-    rgba(216, 179, 110, 0) 200deg,
-    rgba(216, 179, 110, 0.35) 300deg,
-    rgba(216, 179, 110, 0) 360deg
-  );
-  border-radius: 999px;
-  content: "";
-  inset: -3px;
-  opacity: 0;
-  position: absolute;
-  transition: opacity 700ms ease;
-  z-index: -1;
-}
-
-.about-ring:hover::after {
-  opacity: 1;
-}
-
-@keyframes about-ring {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ===================================================================
@@ -4977,50 +4836,7 @@ section.is-visible .ink-bloom-sweep::before {
   background: radial-gradient(circle at 35% 30%, #4a3a2c, #17110d 75%);
 }
 
-/* ---- 站点图标选择器（试炼场面板） ---- */
-.favicon-picker {
-  border-top: 1px solid rgba(32, 25, 22, 0.15);
-  padding-top: 1rem;
-}
 
-.favicon-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-top: 0.5rem;
-}
-
-.favicon-opt {
-  align-items: center;
-  border: 1px solid rgba(32, 25, 22, 0.22);
-  border-radius: 0.5rem;
-  color: #4a3a26;
-  display: flex;
-  flex-direction: column;
-  font-size: 0.78rem;
-  gap: 0.3rem;
-  padding: 0.5rem 0.6rem;
-  transition: border-color 220ms ease, background-color 220ms ease;
-}
-
-.favicon-opt:hover {
-  background: rgba(137, 107, 65, 0.08);
-  border-color: #896b41;
-}
-
-.favicon-opt.is-active {
-  background: rgba(216, 179, 110, 0.16);
-  border-color: #b98d55;
-}
-
-.favicon-opt img {
-  border-radius: 0.35rem;
-  display: block;
-}
-
-.favicon-hint {
-  color: #695d51;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  margin-top: 0.6rem;
+.legal-footer p {
+  margin: 0;
 }

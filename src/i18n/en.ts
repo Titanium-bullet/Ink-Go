@@ -74,20 +74,11 @@ export const en: Dict = {
     desc: "Every ink flourish is a visualization of the rules, never altering who wins. Pick a scenario and place a stone on the board to trigger it.",
     catalog: "Effects Index",
     reset: "Reset Board",
-    faviconCap: "Site Icon",
-    faviconHint: "Click to try a different icon on the browser tab (current default: Pair).",
-    faviconNames: {
-      pair: "Pair",
-      tengen: "Tengen",
-      seal: "Seal",
-      scape: "Landscape",
-      drop: "Ink Drop",
-    },
     scenarios: [
       {
         name: "Spirit Spring · Star Points",
         tag: "Landscape",
-        desc: "With ink beasts on, the nine star points become spirit springs — gold radiance ripples outward from each heart, like mountain water veins stirring beneath the board.",
+        desc: "With ink beasts on, the star points become spirit springs — gold radiance ripples outward from each heart, like mountain water veins stirring beneath the board.",
       },
       {
         name: "Mystic Tortoise · Thick Shape",
@@ -102,7 +93,7 @@ export const en: Dict = {
       {
         name: "Dragon Vein Rift",
         tag: "Ko Fight",
-        desc: "Black playing (2,1) to capture a White stone forms a ko; a gold-red rift blooms at the ko point. By the ko rule the opponent cannot immediately recapture (clicking there does nothing — that is the ko).",
+        desc: "Black playing C8 to capture a White stone forms a ko; a gold-red rift blooms at the ko point. By the ko rule the opponent cannot immediately recapture (clicking there does nothing — that is the ko).",
       },
       {
         name: "Seal Verdict",
@@ -112,7 +103,7 @@ export const en: Dict = {
       {
         name: "Ink Surge · Dragon Slaying",
         tag: "Mass Capture",
-        desc: "Capture four or more stones with a single move, and an ink wave surges across the whole board from the fall of the blade — an ink flourish for the grand exchange. Try Black (4,1) to rip out the five-stone white dragon.",
+        desc: "Capture four or more stones with a single move, and an ink wave surges across the whole board from the fall of the blade — an ink flourish for the grand exchange. Try Black E8 to rip out the five-stone white dragon.",
       },
     ],
   },
@@ -191,8 +182,6 @@ export const en: Dict = {
     dailyHintMessage: "Today's stipend of wen is waiting to be claimed",
     dailyHintCta: "Claim it",
     dailyHintDismiss: "Don't remind me today",
-    boardSkin: "Board",
-    lockedHint: "Locked · {price} wen",
     effectsLocked: "Requires “Ink Beast & Spring Pack”",
     priceTag: "{price} wen",
     stampText: "Owned",
@@ -224,9 +213,9 @@ export const en: Dict = {
 
   about: {
     kicker: "ABOUT THE DEVELOPER",
-    author: "Author of Ink Realm · Mountain & River Go:",
+    author: "Author of Ink Realm · Mountain & River Go",
     name: "Titanium bullet",
-    email1Cap: "Help · Interest · Support",
+    email1Cap: "Help · Support",
     email2Cap: "Business · Issues",
     foot: "Ink Realm · Mountain & River Go",
   },

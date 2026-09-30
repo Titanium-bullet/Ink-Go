@@ -5,7 +5,6 @@ import { useSound } from "../../hooks/useSound";
 import { createGame, playMove, resign, finalScore } from "../../go/engine";
 import { BLACK, WHITE, GameState } from "../../go/types";
 import { useT } from "../../i18n/LanguageContext";
-import { FaviconPicker } from "../demo/FaviconPicker";
 
 type Key = "spring" | "turtle" | "fish" | "ko" | "seal" | "dragon";
 
@@ -23,7 +22,7 @@ function preset(black: number[], white: number[], turn = BLACK): GameState {
 function build(key: Key): GameState {
   switch (key) {
     case "spring":
-      // empty board — nine star points manifest as 灵泉
+      // empty board — star points manifest as 灵泉
       return preset([], [], BLACK);
     case "turtle":
       // black wall y=2, x=2..7 (thick) + a couple white far away
@@ -100,8 +99,6 @@ export function DemoPanel() {
           <p className="panel-cap">{current.name}</p>
           <p className="desc-body">{current.desc}</p>
         </div>
-
-        <FaviconPicker />
 
         {score && <ScorePanel score={score} />}
 

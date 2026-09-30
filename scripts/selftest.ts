@@ -373,6 +373,47 @@ console.log("\n[15] 五子棋引擎：连珠判定 / 占位 / 悔棋 / 满盘和
   assert(st4.finished && st4.winner === "tie", `full board without five-in-a-row is a tie (winner=${st4.winner})`);
 }
 
+
+console.log("\n[16] 引擎 API 边界检查（负数/越界/非整数）");
+{
+  const g = createGame(9);
+  assert(!isLegal(g, -1).legal, "negative index rejected");
+  assert(!isLegal(g, 81).legal, "out-of-bounds index (81 on 9x9) rejected");
+  assert(!isLegal(g, 1.5).legal, "non-integer index rejected");
+  assert(!playMove(g, -1).ok && !playMove(g, 81).ok, "playMove also rejects invalid index");
+}
+
+console.log("\n[17] ko 边界：非单子劫形不设 koPoint");
+{
+  // A. 一手提走两子：captured=2，即便己方也是单子也不得设劫
+  //    白 (1,2)(1,3) 仅剩气 (2,2)；黑下 (2,2) 提二子，(2,2) 与 (2,3) 黑子相连成串
+  const A = raw(9, [2, 3, 10, 13, 21], [11, 12], BLACK);
+  const rA = playMove(A, idx(2, 2, 9));
+  assert(rA.ok && rA.captured === 2, "multi-capture takes exactly 2 white stones");
+  assert(rA.state.koPoint === null, "captured=2 does NOT set ko point");
+
+  // B. 只提一子但己方成串大于一子（selfStones>1）：同样不设劫
+  //    白 (1,1) 仅剩气 (2,1)；黑下 (2,1) 提单子，与 (2,2) 黑子相连
+  const B = raw(9, [1, 9, 19, 20], [10], BLACK);
+  const rB = playMove(B, idx(2, 1, 9));
+  assert(rB.ok && rB.captured === 1, "single capture takes exactly 1 stone");
+  assert(rB.state.koPoint === null, "capturing with a multi-stone group does NOT set ko point");
+}
+
+console.log("\n[18] 19 路空盘终局：双界空区不计地，白贴 6.5 胜");
+{
+  let g = createGame(19, 6.5);
+  g = pass(g).state;
+  g = pass(g).state;
+  assert(g.marking && !g.finished, "two passes enter marking phase");
+  g = confirmScore(g);
+  const s = scoreArea(g);
+  assert(s.blackStones === 0 && s.whiteStones === 0, "empty board: no stones counted");
+  assert(s.blackTerritory === 0 && s.whiteTerritory === 0, "neutral empty region touches both colours -> no territory for either side");
+  assert(s.whiteArea === 6.5, `komi only for white (whiteArea=${s.whiteArea})`);
+  assert(s.winner === WHITE && s.margin === 6.5, `white wins by 6.5 (winner=${s.winner} margin=${s.margin})`);
+}
+
 if (failures === 0) {
   console.log("\n=== ALL ENGINE TESTS PASSED ===\n");
 } else {

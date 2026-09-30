@@ -93,6 +93,12 @@ function simulateMove(
 }
 
 function moveGuards(state: GameState, i: number): string | null {
+  // 引擎是独立 API（不只服务 UI）：负数/越界/非整数一律显式拒绝。
+  // 此前依赖 board[i] 越界读为 undefined 恰好落入 occupied 分支——行为
+  // 上安全但语义错误，显式化后也不受 board 换 TypedArray 等实现变化影响。
+  if (!Number.isInteger(i) || i < 0 || i >= state.board.length) {
+    return "out-of-bounds";
+  }
   if (state.finished) return "finished";
   if (state.marking) return "marking";
   if (state.board[i] !== EMPTY) return "occupied";

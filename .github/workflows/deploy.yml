@@ -47,6 +47,26 @@ jobs:
         with:
           path: dist
 
+  # UI 冒烟与构建并行、不阻塞部署：先观察稳定性，稳定后可加 needs 门禁
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: UI smoke tests (Playwright)
+        run: npm run test:e2e
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
